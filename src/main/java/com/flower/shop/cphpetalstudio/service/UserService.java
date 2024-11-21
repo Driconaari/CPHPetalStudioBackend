@@ -1,6 +1,5 @@
 package com.flower.shop.cphpetalstudio.service;
 
-
 import com.flower.shop.cphpetalstudio.entity.User;
 import com.flower.shop.cphpetalstudio.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -31,47 +30,15 @@ public class UserService implements UserDetailsService {
                 new ArrayList<>());
     }
 
+    public User getUserByUsername(String username) {
+        return userRepository.findByUsername(username)
+                .orElseThrow(() -> new RuntimeException("User not found with username: " + username));
+    }
+
     public User registerUser(User user) {
-        if (userRepository.existsByUsername(user.getUsername())) {
-            throw new RuntimeException("Username is already taken");
-        }
-        if (userRepository.existsByEmail(user.getEmail())) {
-            throw new RuntimeException("Email is already in use");
-        }
         user.setPassword(passwordEncoder.encode(user.getPassword()));
-        user.setRole("ROLE_USER");
         return userRepository.save(user);
     }
 
-    public User createAdminUser(String username, String password, String email) {
-        if (userRepository.existsByUsername(username)) {
-            throw new RuntimeException("Username is already taken");
-        }
-        if (userRepository.existsByEmail(email)) {
-            throw new RuntimeException("Email is already in use");
-        }
-        User adminUser = new User();
-        adminUser.setUsername(username);
-        adminUser.setPassword(passwordEncoder.encode(password));
-        adminUser.setEmail(email);
-        adminUser.setRole("ROLE_ADMIN");
-        return userRepository.save(adminUser);
-    }
-
-    public List<User> getAllUsers() {
-        return userRepository.findAll();
-    }
-
-    public User getUserById(Long id) {
-        return userRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("User not found with id: " + id));
-    }
-
-    public User updateUser(User user) {
-        return userRepository.save(user);
-    }
-
-    public void deleteUser(Long id) {
-        userRepository.deleteById(id);
-    }
+    // Other methods...
 }

@@ -1,6 +1,5 @@
 package com.flower.shop.cphpetalstudio.controller;
 
-
 import com.flower.shop.cphpetalstudio.entity.User;
 import com.flower.shop.cphpetalstudio.security.JwtUtil;
 import com.flower.shop.cphpetalstudio.service.UserService;
@@ -10,10 +9,7 @@ import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/api/auth")
@@ -50,7 +46,7 @@ public class AuthController {
         return ResponseEntity.ok(registeredUser);
     }
 
-    private class AuthenticationResponse {
+    private static class AuthenticationResponse {
         private final String jwt;
 
         public AuthenticationResponse(String jwt) {
