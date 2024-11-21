@@ -1,6 +1,7 @@
 package com.flower.shop.cphpetalstudio.controller;
 
 
+import com.flower.shop.cphpetalstudio.entity.Bouquet;
 import com.flower.shop.cphpetalstudio.service.BouquetService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.access.prepost.PreAuthorize;
