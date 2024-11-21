@@ -1,7 +1,7 @@
 package com.flower.shop.cphpetalstudio.service;
 
-import com.example.flowershop.model.Subscription;
-import com.example.flowershop.repository.SubscriptionRepository;
+
+import com.flower.shop.cphpetalstudio.entity.Subscription;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 

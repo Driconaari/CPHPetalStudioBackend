@@ -1,6 +1,7 @@
 package com.flower.shop.cphpetalstudio.entity;
 
-import javax.persistence.*;
+
+import jakarta.persistence.*;
 import lombok.Data;
 import java.time.LocalDate;
 

@@ -26,4 +26,4 @@ public class SubscriptionController {
     public String viewSubscription(@PathVariable Long id, Model model) {
         model.addAttribute("subscription", subscriptionService.getSubscriptionById(id));
         return "admin/subscriptions/view";
-    }
+    }}
