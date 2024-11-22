@@ -1,7 +1,7 @@
 package com.flower.shop.cphpetalstudio.controller;
 
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -11,9 +11,15 @@ import org.springframework.web.bind.annotation.GetMapping;
 public class DashboardController {
 
     @GetMapping("/dashboard")
-    @PreAuthorize("hasAuthority('ROLE_ADMIN')")
     public String dashboard(Model model) {
-        // Your dashboard logic here
-        return "dashboard";
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        model.addAttribute("username", auth.getName());
+        model.addAttribute("roles", auth.getAuthorities().toString());
+
+        if (auth.getAuthorities().contains(new SimpleGrantedAuthority("ROLE_ADMIN"))) {
+            return "admin-dashboard";
+        } else {
+            return "user-dashboard";
+        }
     }
 }
