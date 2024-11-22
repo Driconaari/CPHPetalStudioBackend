@@ -1,16 +1,12 @@
 package com.flower.shop.cphpetalstudio.security;
 
-import io.jsonwebtoken.Claims;
-import io.jsonwebtoken.Jwts;
-import io.jsonwebtoken.SignatureAlgorithm;
+import io.jsonwebtoken.*;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
-import org.springframework.security.core.authority.SimpleGrantedAuthority;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Component;
 
 import java.util.Date;
-import java.util.List;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -22,6 +18,20 @@ public class JwtUtil {
 
     @Value("${jwt.expiration}")
     private Long expiration;
+
+    public String generateToken(Authentication authentication) {
+        final String authorities = authentication.getAuthorities().stream()
+                .map(GrantedAuthority::getAuthority)
+                .collect(Collectors.joining(","));
+
+        return Jwts.builder()
+                .setSubject(authentication.getName())
+                .claim("roles", authorities)
+                .setIssuedAt(new Date(System.currentTimeMillis()))
+                .setExpiration(new Date(System.currentTimeMillis() + expiration))
+                .signWith(SignatureAlgorithm.HS512, secret)
+                .compact();
+    }
 
     public String extractUsername(String token) {
         return extractClaim(token, Claims::getSubject);
@@ -44,29 +54,12 @@ public class JwtUtil {
         return extractExpiration(token).before(new Date());
     }
 
-    public String generateToken(UserDetails userDetails) {
-        return createToken(userDetails.getUsername(), userDetails.getAuthorities().stream()
-                .map(GrantedAuthority::getAuthority)
-                .collect(Collectors.toList()));
-    }
-
-    private String createToken(String subject, List<String> authorities) {
-        return Jwts.builder().setSubject(subject)
-                .claim("authorities", authorities)
-                .setIssuedAt(new Date(System.currentTimeMillis()))
-                .setExpiration(new Date(System.currentTimeMillis() + expiration * 1000))
-                .signWith(SignatureAlgorithm.HS256, secret).compact();
-    }
-
     public Boolean validateToken(String token) {
-        return !isTokenExpired(token);
-    }
-
-    public List<GrantedAuthority> getAuthoritiesFromToken(String token) {
-        Claims claims = extractAllClaims(token);
-        List<String> authorities = claims.get("authorities", List.class);
-        return authorities.stream()
-                .map(SimpleGrantedAuthority::new)
-                .collect(Collectors.toList());
+        try {
+            Jwts.parser().setSigningKey(secret).parseClaimsJws(token);
+            return !isTokenExpired(token);
+        } catch (JwtException | IllegalArgumentException e) {
+            return false;
+        }
     }
 }

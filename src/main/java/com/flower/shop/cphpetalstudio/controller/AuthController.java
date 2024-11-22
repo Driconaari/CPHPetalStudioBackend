@@ -1,43 +1,60 @@
 package com.flower.shop.cphpetalstudio.controller;
 
+
 import com.flower.shop.cphpetalstudio.entity.User;
 import com.flower.shop.cphpetalstudio.security.JwtUtil;
 import com.flower.shop.cphpetalstudio.service.UserService;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
-import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
+
+import java.util.HashMap;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api/auth")
 public class AuthController {
 
-    @Autowired
-    private AuthenticationManager authenticationManager;
+    private final AuthenticationManager authenticationManager;
+    private final JwtUtil jwtUtil;
+    private final UserService userService;
 
-    @Autowired
-    private UserService userService;
-
-    @Autowired
-    private JwtUtil jwtUtil;
+    public AuthController(AuthenticationManager authenticationManager, JwtUtil jwtUtil, UserService userService) {
+        this.authenticationManager = authenticationManager;
+        this.jwtUtil = jwtUtil;
+        this.userService = userService;
+    }
 
     @PostMapping("/login")
-    public ResponseEntity<?> createAuthenticationToken(@RequestBody User user) throws Exception {
+    public ResponseEntity<?> authenticateUser(@RequestBody Map<String, String> loginRequest) {
         try {
-            authenticationManager.authenticate(
-                    new UsernamePasswordAuthenticationToken(user.getUsername(), user.getPassword())
+            Authentication authentication = authenticationManager.authenticate(
+                    new UsernamePasswordAuthenticationToken(
+                            loginRequest.get("username"),
+                            loginRequest.get("password")
+                    )
             );
-        } catch (BadCredentialsException e) {
-            throw new Exception("Incorrect username or password", e);
+
+            SecurityContextHolder.getContext().setAuthentication(authentication);
+
+            String jwt = jwtUtil.generateToken(authentication);
+            User user = userService.getUserByUsername(loginRequest.get("username"));
+
+            Map<String, Object> response = new HashMap<>();
+            response.put("token", jwt);
+            response.put("username", user.getUsername());
+            response.put("role", user.getRole());
+
+            return ResponseEntity.ok(response);
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body("Error: " + e.getMessage());
         }
-
-        final UserDetails userDetails = userService.loadUserByUsername(user.getUsername());
-        final String jwt = jwtUtil.generateToken(userDetails);
-
-        return ResponseEntity.ok(new AuthenticationResponse(jwt));
     }
 
     @PostMapping("/register")
