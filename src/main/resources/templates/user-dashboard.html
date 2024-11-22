@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org">
 <head>
-  <title>User Dashboard</title>
+  <title>User Dashboard - Flower Shop</title>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <style>
@@ -13,14 +13,14 @@
       background-color: #f4f4f4;
     }
     .container {
-      max-width: 800px;
+      max-width: 1200px;
       margin: auto;
       background: white;
       padding: 20px;
       border-radius: 5px;
       box-shadow: 0 0 10px rgba(0,0,0,0.1);
     }
-    h1 {
+    h1, h2 {
       color: #333;
     }
     .info {
@@ -29,23 +29,155 @@
       margin-bottom: 15px;
       padding: 4px 12px;
     }
+    nav {
+      background-color: #333;
+      color: white;
+      padding: 10px;
+    }
+    nav a {
+      color: white;
+      text-decoration: none;
+      padding: 5px 10px;
+    }
+    .bouquet-list {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 20px;
+    }
+    .bouquet-item {
+      border: 1px solid #ddd;
+      border-radius: 5px;
+      padding: 10px;
+      width: calc(33.333% - 20px);
+      box-sizing: border-box;
+    }
+    .bouquet-item img {
+      max-width: 100%;
+      height: auto;
+    }
+    .cart {
+      border: 1px solid #ddd;
+      border-radius: 5px;
+      padding: 10px;
+      margin-top: 20px;
+    }
+    button {
+      background-color: #4CAF50;
+      color: white;
+      padding: 10px 15px;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+    button:hover {
+      background-color: #45a049;
+    }
   </style>
 </head>
 <body>
+<nav>
+  <a href="/">Home</a>
+  <a href="/bouquets">Bouquets</a>
+  <a href="/dashboard">Dashboard</a>
+  <a href="/cart">Cart</a>
+  <a href="/logout">Logout</a>
+</nav>
 <div class="container">
-  <h1>Welcome to Your Dashboard</h1>
+  <h1>Welcome to Your Dashboard, <span th:text="${username}"></span>!</h1>
   <div class="info">
-    <p><strong>Username:</strong> <span th:text="${username}"></span></p>
-    <p><strong>Roles:</strong> <span th:text="${roles}"></span></p>
+    <p><strong>Email:</strong> <span th:text="${user.email}"></span></p>
+    <p><strong>Member since:</strong> <span th:text="${#temporals.format(user.createdAt, 'dd-MM-yyyy')}"></span></p>
   </div>
-  <p>Welcome to your personal dashboard. Here you can manage your account and view your orders.</p>
-  <!-- Add user-specific functionalities here -->
-  <ul>
-    <li>View My Orders</li>
-    <li>Update Profile</li>
-    <li>Manage Subscriptions</li>
-    <li>Contact Support</li>
-  </ul>
+
+  <h2>Featured Bouquets</h2>
+  <div class="bouquet-list">
+    <div class="bouquet-item" th:each="bouquet : ${featuredBouquets}">
+      <img th:src="${bouquet.imageUrl}" alt="Bouquet Image">
+      <h3 th:text="${bouquet.name}"></h3>
+      <p th:text="${bouquet.description}"></p>
+      <p>Price: $<span th:text="${bouquet.price}"></span></p>
+      <button th:onclick="'addToCart(' + ${bouquet.id} + ')'">Add to Cart</button>
+    </div>
+  </div>
+
+  <div class="cart">
+    <h2>Your Cart</h2>
+    <ul id="cartItems">
+      <!-- Cart items will be dynamically added here -->
+    </ul>
+    <p>Total: $<span id="cartTotal">0.00</span></p>
+    <button onclick="checkout()">Checkout</button>
+  </div>
+
+  <h2>Recent Orders</h2>
+  <table>
+    <thead>
+    <tr>
+      <th>Order ID</th>
+      <th>Date</th>
+      <th>Total</th>
+      <th>Status</th>
+    </tr>
+    </thead>
+    <tbody>
+    <tr th:each="order : ${recentOrders}">
+      <td th:text="${order.id}"></td>
+      <td th:text="${#temporals.format(order.orderDate, 'dd-MM-yyyy HH:mm')}"></td>
+      <td th:text="${'$' + order.total}"></td>
+      <td th:text="${order.status}"></td>
+    </tr>
+    </tbody>
+  </table>
 </div>
+
+<script th:inline="javascript">
+  let cart = [];
+
+  function addToCart(bouquetId) {
+    fetch(`/api/bouquets/${bouquetId}`)
+            .then(response => response.json())
+            .then(bouquet => {
+              cart.push(bouquet);
+              updateCartDisplay();
+            });
+  }
+
+  function updateCartDisplay() {
+    const cartItems = document.getElementById('cartItems');
+    const cartTotal = document.getElementById('cartTotal');
+
+    cartItems.innerHTML = '';
+    let total = 0;
+
+    cart.forEach(item => {
+      const li = document.createElement('li');
+      li.textContent = `${item.name} - $${item.price}`;
+      cartItems.appendChild(li);
+      total += item.price;
+    });
+
+    cartTotal.textContent = total.toFixed(2);
+  }
+
+  function checkout() {
+    fetch('/api/orders', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(cart)
+    })
+            .then(response => response.json())
+            .then(order => {
+              alert(`Order placed successfully! Order ID: ${order.id}`);
+              cart = [];
+              updateCartDisplay();
+            })
+            .catch(error => {
+              console.error('Error:', error);
+              alert('Failed to place order. Please try again.');
+            });
+  }
+</script>
 </body>
 </html>

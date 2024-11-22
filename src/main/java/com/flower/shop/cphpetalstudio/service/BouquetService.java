@@ -1,18 +1,23 @@
 package com.flower.shop.cphpetalstudio.service;
 
-
 import com.flower.shop.cphpetalstudio.entity.Bouquet;
 import com.flower.shop.cphpetalstudio.repository.BouquetRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
 @Service
+@Transactional
 public class BouquetService {
 
+    private final BouquetRepository bouquetRepository;
+
     @Autowired
-    private BouquetRepository bouquetRepository;
+    public BouquetService(BouquetRepository bouquetRepository) {
+        this.bouquetRepository = bouquetRepository;
+    }
 
     public List<Bouquet> getAllBouquets() {
         return bouquetRepository.findAll();
@@ -21,6 +26,10 @@ public class BouquetService {
     public Bouquet getBouquetById(Long id) {
         return bouquetRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Bouquet not found with id: " + id));
+    }
+
+    public List<Bouquet> getFeaturedBouquets() {
+        return bouquetRepository.findTop5ByFeaturedTrueOrderByCreatedAtDesc();
     }
 
     public List<Bouquet> searchBouquets(String name) {
@@ -37,10 +46,25 @@ public class BouquetService {
         bouquet.setDescription(bouquetDetails.getDescription());
         bouquet.setPrice(bouquetDetails.getPrice());
         bouquet.setImageUrl(bouquetDetails.getImageUrl());
+        bouquet.setFeatured(bouquetDetails.isFeatured());
         return bouquetRepository.save(bouquet);
     }
 
     public void deleteBouquet(Long id) {
         bouquetRepository.deleteById(id);
+    }
+
+    public List<Bouquet> getBouquetsByCategory(String category) {
+        return bouquetRepository.findByCategory(category);
+    }
+
+    public List<Bouquet> getLatestBouquets(int limit) {
+        return bouquetRepository.findTopNByOrderByCreatedAtDesc(limit);
+    }
+
+    public void updateBouquetStock(Long id, int quantity) {
+        Bouquet bouquet = getBouquetById(id);
+        bouquet.setStockQuantity(bouquet.getStockQuantity() + quantity);
+        bouquetRepository.save(bouquet);
     }
 }
