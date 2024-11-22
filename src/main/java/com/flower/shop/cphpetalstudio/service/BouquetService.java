@@ -8,6 +8,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
+
 @Service
 @Transactional
 public class BouquetService {
@@ -59,7 +60,7 @@ public class BouquetService {
     }
 
     public List<Bouquet> getLatestBouquets(int limit) {
-        return bouquetRepository.findTopNByOrderByCreatedAtDesc(limit);
+        return bouquetRepository.findLatestBouquets(limit);
     }
 
     public void updateBouquetStock(Long id, int quantity) {
