@@ -5,6 +5,7 @@ import jakarta.persistence.*;
 
 import java.util.Objects;
 
+
 @Entity
 @Table(name = "users")
 public class User {
@@ -24,15 +25,19 @@ public class User {
     @Column(unique = true)
     private String email;
 
+    @Column(nullable = false)
+    private boolean isCompany;
+
     // Default constructor
     public User() {}
 
     // Constructor with fields
-    public User(String username, String password, String role, String email) {
+    public User(String username, String password, String role, String email, boolean isCompany) {
         this.username = username;
         this.password = password;
         this.role = role;
         this.email = email;
+        this.isCompany = isCompany;
     }
 
     // Getters and setters
@@ -76,20 +81,29 @@ public class User {
         this.email = email;
     }
 
+    public boolean isCompany() {
+        return isCompany;
+    }
+
+    public void setCompany(boolean company) {
+        isCompany = company;
+    }
+
     // equals and hashCode methods
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         User user = (User) o;
-        return Objects.equals(id, user.id) &&
+        return isCompany == user.isCompany &&
+                Objects.equals(id, user.id) &&
                 Objects.equals(username, user.username) &&
                 Objects.equals(email, user.email);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(id, username, email);
+        return Objects.hash(id, username, email, isCompany);
     }
 
     // toString method
@@ -100,6 +114,7 @@ public class User {
                 ", username='" + username + '\'' +
                 ", role='" + role + '\'' +
                 ", email='" + email + '\'' +
+                ", isCompany=" + isCompany +
                 '}';
     }
 }

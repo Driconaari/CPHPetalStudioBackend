@@ -26,6 +26,10 @@
                     <label for="confirmPassword" class="form-label">Confirm Password</label>
                     <input type="password" class="form-control" id="confirmPassword" name="confirmPassword" required>
                 </div>
+                <div class="mb-3 form-check">
+                    <input type="checkbox" class="form-check-input" id="isCompany" name="isCompany">
+                    <label class="form-check-label" for="isCompany">Register as a company</label>
+                </div>
                 <button type="submit" class="btn btn-primary">Register</button>
             </form>
             <div class="mt-3">
@@ -43,13 +47,14 @@
         const email = document.getElementById('email').value;
         const password = document.getElementById('password').value;
         const confirmPassword = document.getElementById('confirmPassword').value;
+        const isCompany = document.getElementById('isCompany').checked;
 
         if (password !== confirmPassword) {
             alert('Passwords do not match');
             return;
         }
 
-        axios.post('/api/auth/register', { username, email, password })
+        axios.post('/api/auth/register', { username, email, password, isCompany })
             .then(function (response) {
                 alert('Registration successful! Please login.');
                 window.location.href = '/login';
