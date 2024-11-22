@@ -39,6 +39,11 @@ public class JwtUtil {
         return Jwts.parser().setSigningKey(secret).parseClaimsJws(token).getBody();
     }
 
+    // Add this new public method
+    public Claims getAllClaimsFromToken(String token) {
+        return extractAllClaims(token);
+    }
+
     private Boolean isTokenExpired(String token) {
         return extractExpiration(token).before(new Date());
     }
