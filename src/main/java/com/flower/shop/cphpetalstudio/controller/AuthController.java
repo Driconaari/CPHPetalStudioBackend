@@ -1,6 +1,5 @@
 package com.flower.shop.cphpetalstudio.controller;
 
-
 import com.flower.shop.cphpetalstudio.entity.User;
 import com.flower.shop.cphpetalstudio.security.JwtUtil;
 import com.flower.shop.cphpetalstudio.service.UserService;
@@ -8,7 +7,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -32,18 +31,15 @@ public class AuthController {
     }
 
     @PostMapping("/login")
-    public ResponseEntity<?> authenticateUser(@RequestBody Map<String, String> loginRequest) {
+    public ResponseEntity<?> createAuthenticationToken(@RequestBody Map<String, String> loginRequest) {
         try {
             Authentication authentication = authenticationManager.authenticate(
-                    new UsernamePasswordAuthenticationToken(
-                            loginRequest.get("username"),
-                            loginRequest.get("password")
-                    )
+                    new UsernamePasswordAuthenticationToken(loginRequest.get("username"), loginRequest.get("password"))
             );
 
-            SecurityContextHolder.getContext().setAuthentication(authentication);
+            final UserDetails userDetails = (UserDetails) authentication.getPrincipal();
+            final String jwt = jwtUtil.generateToken(userDetails);
 
-            String jwt = jwtUtil.generateToken(authentication);
             User user = userService.getUserByUsername(loginRequest.get("username"));
 
             Map<String, Object> response = new HashMap<>();

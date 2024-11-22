@@ -1,5 +1,6 @@
 package com.flower.shop.cphpetalstudio.security;
 
+import io.jsonwebtoken.Claims;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -14,7 +15,6 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
-import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -46,14 +46,13 @@ public class JwtRequestFilter extends OncePerRequestFilter {
         if (username != null && SecurityContextHolder.getContext().getAuthentication() == null) {
             UserDetails userDetails = this.userDetailsService.loadUserByUsername(username);
 
-            if (jwtUtil.validateToken(jwt)) {
-                String roles = jwtUtil.extractClaim(jwt, claims -> claims.get("roles", String.class));
-                List<SimpleGrantedAuthority> authorities = Arrays.stream(roles.split(","))
-                        .map(SimpleGrantedAuthority::new)
-                        .collect(Collectors.toList());
+            if (jwtUtil.validateToken(jwt, userDetails)) {
+                Claims claims = jwtUtil.extractAllClaims(jwt);
+                List<String> authorities = (List<String>) claims.get("authorities");
 
                 UsernamePasswordAuthenticationToken usernamePasswordAuthenticationToken = new UsernamePasswordAuthenticationToken(
-                        userDetails, null, authorities);
+                        userDetails, null,
+                        authorities.stream().map(SimpleGrantedAuthority::new).collect(Collectors.toList()));
                 usernamePasswordAuthenticationToken
                         .setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
                 SecurityContextHolder.getContext().setAuthentication(usernamePasswordAuthenticationToken);
