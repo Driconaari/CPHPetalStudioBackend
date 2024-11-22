@@ -1,47 +1,38 @@
 package com.flower.shop.cphpetalstudio.entity;
 
-
 import jakarta.persistence.*;
-
-import java.util.Objects;
-
-
+import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "users")
 public class User {
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(unique = true, nullable = false)
+    @Column(nullable = false, unique = true)
     private String username;
 
     @Column(nullable = false)
     private String password;
 
-    @Column(nullable = false)
-    private String role;
-
-    @Column(unique = true)
+    @Column(nullable = false, unique = true)
     private String email;
 
     @Column(nullable = false)
-    private boolean isCompany;
+    private String role;
 
-    // Default constructor
-    public User() {}
+    @Column(name = "created_at")
+    private LocalDateTime createdAt;
 
-    // Constructor with fields
-    public User(String username, String password, String role, String email, boolean isCompany) {
-        this.username = username;
-        this.password = password;
-        this.role = role;
-        this.email = email;
-        this.isCompany = isCompany;
+    // Constructor
+    public User() {
+        this.createdAt = LocalDateTime.now();
     }
 
     // Getters and setters
+
     public Long getId() {
         return id;
     }
@@ -66,14 +57,6 @@ public class User {
         this.password = password;
     }
 
-    public String getRole() {
-        return role;
-    }
-
-    public void setRole(String role) {
-        this.role = role;
-    }
-
     public String getEmail() {
         return email;
     }
@@ -82,54 +65,23 @@ public class User {
         this.email = email;
     }
 
-    public boolean isCompany() {
-        return isCompany;
+    public String getRole() {
+        return role;
     }
 
-    public void setCompany(boolean company) {
-        isCompany = company;
+    public void setRole(String role) {
+        this.role = role;
+    }
+
+    public LocalDateTime getCreatedAt() {
+        return createdAt;
+    }
+
+    public void setCreatedAt(LocalDateTime createdAt) {
+        this.createdAt = createdAt;
     }
 
     public String getRoles() {
         return role;
     }
-
-    public void setRoles(String role) {
-        this.role = role;
-    }
-
-
-
-
-    // equals and hashCode methods
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
-        User user = (User) o;
-        return isCompany == user.isCompany &&
-                Objects.equals(id, user.id) &&
-                Objects.equals(username, user.username) &&
-                Objects.equals(email, user.email);
-    }
-
-    @Override
-    public int hashCode() {
-        return Objects.hash(id, username, email, isCompany);
-    }
-
-    // toString method
-    @Override
-    public String toString() {
-        return "User{" +
-                "id=" + id +
-                ", username='" + username + '\'' +
-                ", role='" + role + '\'' +
-                ", email='" + email + '\'' +
-                ", isCompany=" + isCompany +
-                '}';
-    }
-
-
 }
-
