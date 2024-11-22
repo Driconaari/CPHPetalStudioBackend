@@ -6,6 +6,7 @@ import jakarta.persistence.*;
 import java.util.Objects;
 
 
+
 @Entity
 @Table(name = "users")
 public class User {
@@ -89,6 +90,17 @@ public class User {
         isCompany = company;
     }
 
+    public String getRoles() {
+        return role;
+    }
+
+    public void setRoles(String role) {
+        this.role = role;
+    }
+
+
+
+
     // equals and hashCode methods
     @Override
     public boolean equals(Object o) {
@@ -117,4 +129,7 @@ public class User {
                 ", isCompany=" + isCompany +
                 '}';
     }
+
+
 }
+

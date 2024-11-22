@@ -13,9 +13,7 @@ public class DashboardController {
     @GetMapping("/dashboard")
     @PreAuthorize("hasAuthority('ROLE_ADMIN')")
     public String dashboard(Model model) {
-        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-        model.addAttribute("username", auth.getName());
+        // Your dashboard logic here
         return "dashboard";
     }
 }
-
