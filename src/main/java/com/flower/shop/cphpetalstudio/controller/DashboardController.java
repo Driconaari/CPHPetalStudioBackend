@@ -8,21 +8,14 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 
 @Controller
-public class HomeController {
+public class DashboardController {
 
-    @GetMapping("/")
-    public String home() {
-        return "home";
-    }
-
-    @GetMapping("/login")
-    public String login() {
-        return "login";
-    }
-
-
-    @GetMapping("/register")
-    public String registerPage() {
-        return "register";
+    @GetMapping("/dashboard")
+    @PreAuthorize("hasAuthority('ROLE_ADMIN')")
+    public String dashboard(Model model) {
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        model.addAttribute("username", auth.getName());
+        return "dashboard";
     }
 }
+

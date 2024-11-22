@@ -34,6 +34,11 @@ public class UserService {
         return userRepository.save(user);
     }
 
+    public boolean isUserAdmin(String username) {
+        User user = getUserByUsername(username);
+        return "ROLE_ADMIN".equals(user.getRole());
+    }
+
     public UserDetails loadUserByUsername(String username) {
         User user = userRepository.findByUsername(username)
                 .orElseThrow(() -> new RuntimeException("User not found with username: " + username));
