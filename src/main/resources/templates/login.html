@@ -29,6 +29,7 @@
       color: white;
       border: none;
       cursor: pointer;
+      margin-right: 10px;
     }
     button:disabled {
       background-color: #cccccc;
@@ -46,6 +47,10 @@
       background-color: #f8d7da;
       color: #721c24;
     }
+    #dashboardButton {
+      display: none;
+      background-color: #28a745;
+    }
   </style>
 </head>
 <body>
@@ -60,10 +65,12 @@
 </div>
 <button onclick="login()">Login</button>
 <button onclick="testProtectedEndpoint()" id="testButton" disabled>Test Protected Endpoint</button>
+<button onclick="goToDashboard()" id="dashboardButton">Go to Dashboard</button>
 <div id="message"></div>
 
 <script>
   let token = '';
+  let userRole = '';
 
   function login() {
     const username = document.getElementById('username').value;
@@ -84,15 +91,18 @@
             })
             .then(data => {
               token = data.token;
+              userRole = data.role;
               document.getElementById('message').textContent = 'Logged in successfully';
               document.getElementById('message').className = 'success';
               document.getElementById('testButton').disabled = false;
+              document.getElementById('dashboardButton').style.display = 'inline-block';
             })
             .catch(error => {
               console.error('Error:', error);
               document.getElementById('message').textContent = 'Login failed. Please check your credentials.';
               document.getElementById('message').className = 'error';
               document.getElementById('testButton').disabled = true;
+              document.getElementById('dashboardButton').style.display = 'none';
             });
   }
 
@@ -118,6 +128,11 @@
               document.getElementById('message').textContent = 'Failed to access protected endpoint. Please ensure you are logged in.';
               document.getElementById('message').className = 'error';
             });
+  }
+
+  function goToDashboard() {
+    // Redirect to the dashboard
+    window.location.href = 'http://localhost:8080/dashboard';
   }
 </script>
 </body>
