@@ -26,11 +26,16 @@ public class User {
     @Column(name = "created_at")
     private LocalDateTime createdAt;
 
+    @Column(name = "is_company", nullable = false)
+    private boolean isCompany;
+
+
+
     // Constructor
     public User() {
         this.createdAt = LocalDateTime.now();
+        this.isCompany = false; // Default value
     }
-
     // Getters and setters
 
     public Long getId() {
