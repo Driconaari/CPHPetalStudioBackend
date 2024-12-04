@@ -16,17 +16,18 @@ import java.util.List;
 @Controller
 public class DashboardController {
 
-    @Autowired
-    private UserService userService;
+    private final UserService userService;
+    private final BouquetService bouquetService;
 
     @Autowired
-    private BouquetService bouquetService;
+    public DashboardController(UserService userService, BouquetService bouquetService) {
+        this.userService = userService;
+        this.bouquetService = bouquetService;
+    }
 
     @GetMapping("/dashboard")
     public String dashboard(Model model, Authentication authentication) {
         User user = userService.findByUsername(authentication.getName());
-        model.addAttribute("user", user);
-        String username = authentication.getName();
         List<Bouquet> featuredBouquets = bouquetService.getFeaturedBouquets();
 
         model.addAttribute("user", user);
@@ -40,17 +41,25 @@ public class DashboardController {
     }
 
     @GetMapping("/shop")
-    public String shop() {
+    public String shop(Model model) {
+        List<Bouquet> allBouquets = bouquetService.getAllBouquets();
+        model.addAttribute("bouquets", allBouquets);
         return "shop";
     }
 
     @GetMapping("/cart")
-    public String cart() {
+    public String cart(Model model, Authentication authentication) {
+        User user = userService.findByUsername(authentication.getName());
+        // Assuming you have a method to get user's cart items
+        // List<CartItem> cartItems = cartService.getCartItemsForUser(user);
+        // model.addAttribute("cartItems", cartItems);
         return "cart";
     }
 
     @GetMapping("/account/edit")
-    public String editProfile() {
+    public String editProfile(Model model, Authentication authentication) {
+        User user = userService.findByUsername(authentication.getName());
+        model.addAttribute("user", user);
         return "edit-profile";
     }
 
