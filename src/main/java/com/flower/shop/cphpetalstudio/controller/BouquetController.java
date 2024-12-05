@@ -22,7 +22,7 @@ public class BouquetController {
     public String viewBouquets(Model model) {
         List<Bouquet> bouquets = bouquetService.getAllBouquets();
         model.addAttribute("bouquets", bouquets);
-        return "bouquet/list"; // This will render 'list.html' using Thymeleaf
+        return "bouquets/list"; // This will render 'list.html' using Thymeleaf
     }
 
     // View bouquet details for both normal users and admins
