@@ -20,6 +20,4 @@ public interface BouquetRepository extends JpaRepository<Bouquet, Long> {
     @Query("SELECT b FROM Bouquet b ORDER BY b.createdAt DESC LIMIT :limit")
     List<Bouquet> findLatestBouquets(@Param("limit") int limit);
 
-
-    List<Bouquet> findTopNByOrderByCreatedAtDesc(int limit);
 }
