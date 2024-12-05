@@ -17,15 +17,13 @@ public class BouquetController {
     @Autowired
     private BouquetService bouquetService;
 
-    // View all bouquets for both normal users and admins
-    @GetMapping
+    @GetMapping("/list")
     public String viewBouquets(Model model) {
         List<Bouquet> bouquets = bouquetService.getAllBouquets();
         model.addAttribute("bouquets", bouquets);
-        return "bouquets/list"; // This will render 'list.html' using Thymeleaf
+        return "bouquets/list"; // Render 'list.html'
     }
 
-    // View bouquet details for both normal users and admins
     @GetMapping("/{id}")
     public String viewBouquet(@PathVariable Long id, Model model) {
         Bouquet bouquet = bouquetService.getBouquetById(id);
@@ -33,20 +31,18 @@ public class BouquetController {
         return "bouquets/view";  // Single bouquet view
     }
 
-    // Admin only: Form to create a new bouquet
     @PreAuthorize("hasRole('ADMIN')")
     @GetMapping("/create")
     public String createBouquetForm(Model model) {
         model.addAttribute("bouquet", new Bouquet());
-        return "bouquets/create";  // Create form for admin
+        return "bouquets/create";  // Admin create form
     }
 
-    // Admin only: Handling POST request for creating new bouquet
     @PreAuthorize("hasRole('ADMIN')")
     @PostMapping("/create")
     public String createBouquet(@ModelAttribute Bouquet bouquet) {
         bouquetService.createBouquet(bouquet);
-        return "redirect:/bouquets";  // Redirect back to the bouquet list
+        return "redirect:/bouquets/list";  // Redirect to the bouquet list
     }
 
     // Admin only: Edit form for an existing bouquet
