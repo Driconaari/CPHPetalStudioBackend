@@ -62,7 +62,7 @@ public class UserController {
         // Update user details
         currentUser.setUsername(updatedUser.getUsername());
         currentUser.setEmail(updatedUser.getEmail());
-        User savedUser = userService.save(currentUser);
+        User savedUser = userService.saveUser(currentUser);
 
         return ResponseEntity.ok(savedUser);
     }
@@ -76,7 +76,7 @@ public class UserController {
             return ResponseEntity.notFound().build();
         }
 
-        if (!userService.isPasswordValid(user, oldPassword)) {
+        if (!userService.checkPassword(user, oldPassword)) {
             return ResponseEntity.badRequest().body("Old password is incorrect.");
         }
 
@@ -84,7 +84,7 @@ public class UserController {
             return ResponseEntity.badRequest().body("New password does not meet security requirements.");
         }
 
-        userService.changePassword(user, oldPassword, newPassword);
+        userService.updatePassword(user, newPassword);
         return ResponseEntity.ok("Password changed successfully.");
     }
 

@@ -95,7 +95,7 @@ public String updateProfile(@ModelAttribute User updatedUser, Authentication aut
     User currentUser = userService.findByUsername(authentication.getName());
 
     // Update the user's details
-    currentUser.setName(updatedUser.getName());
+    currentUser.setUsername(updatedUser.getUsername());
     currentUser.setEmail(updatedUser.getEmail());
     // Add other fields as necessary
 

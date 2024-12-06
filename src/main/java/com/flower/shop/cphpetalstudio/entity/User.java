@@ -59,4 +59,6 @@ public class User {
     public void setCompany(boolean company) {
         isCompany = company;
     }
+
+
 }
