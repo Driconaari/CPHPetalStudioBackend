@@ -28,12 +28,6 @@ public class UserController {
     @Autowired
     private UserService userService;
 
-    @GetMapping("/dashboard")
-    public String getUserDashboard(@AuthenticationPrincipal UserDetails userDetails, Model model) {
-        User user = userService.findByUsername(userDetails.getUsername());
-        model.addAttribute("user", user);
-        return "user-dashboard";
-    }
 
     @GetMapping("/check-role")
     public ResponseEntity<String> checkUserRole(Authentication authentication) {
