@@ -3,6 +3,8 @@ package com.flower.shop.cphpetalstudio.entity;
 import jakarta.persistence.*;
 import java.time.LocalDateTime;
 
+
+@Lombok.Getter  // Lombok annotation to generate getters
 @Entity
 @Table(name = "users")
 public class User {
