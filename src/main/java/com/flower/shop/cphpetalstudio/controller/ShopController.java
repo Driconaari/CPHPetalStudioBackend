@@ -17,15 +17,26 @@ import java.util.List;
 @RequestMapping("/api/shop")
 public class ShopController {
 
-    @Autowired
-    private BouquetService bouquetService;
+    private final BouquetService bouquetService;
+    private final OrderService orderService;
+    private final UserService userService;
 
     @Autowired
-    private OrderService orderService;
+    public ShopController(BouquetService bouquetService, OrderService orderService, UserService userService) {
+        this.bouquetService = bouquetService;
+        this.orderService = orderService;
+        this.userService = userService;
+    }
 
-    @Autowired
-    private UserService userService;
-
+    @GetMapping("/bouquets/{id}")
+    public ResponseEntity<?> getBouquet(@PathVariable Long id) {
+        try {
+            Bouquet bouquet = bouquetService.getBouquetById(id);
+            return ResponseEntity.ok(bouquet);
+        } catch (Exception e) {
+            return ResponseEntity.notFound().build();
+        }
+    }
 
     @PostMapping("/orders")
     public ResponseEntity<?> createOrder(@RequestBody List<Bouquet> bouquets, Authentication authentication) {
@@ -38,17 +49,6 @@ public class ShopController {
             return ResponseEntity.ok(order);
         } catch (Exception e) {
             return ResponseEntity.internalServerError().body("An error occurred while creating the order: " + e.getMessage());
-        }
-    }
-
-
-    @GetMapping("/bouquets/{id}")
-    public ResponseEntity<?> getBouquet(@PathVariable Long id) {
-        try {
-            Bouquet bouquet = bouquetService.getBouquetById(id);
-            return ResponseEntity.ok(bouquet);
-        } catch (Exception e) {
-            return ResponseEntity.notFound().build();
         }
     }
 }
