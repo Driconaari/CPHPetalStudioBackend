@@ -10,6 +10,9 @@ import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.ModelAttribute;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 
 import java.util.List;
 
@@ -85,4 +88,44 @@ public class DashboardController {
     public String changePassword() {
         return "change-password"; // Change password page template
     }
+
+    @PostMapping("/account/edit")
+public String updateProfile(@ModelAttribute User updatedUser, Authentication authentication, Model model) {
+    // Fetch the current user
+    User currentUser = userService.findByUsername(authentication.getName());
+
+    // Update the user's details
+    currentUser.setName(updatedUser.getName());
+    currentUser.setEmail(updatedUser.getEmail());
+    // Add other fields as necessary
+
+    // Save the updated user
+    userService.saveUser(currentUser);
+
+    // Add the updated user object to the model
+    model.addAttribute("user", currentUser);
+    return "edit-profile"; // Redirect to the edit profile page
+}
+
+@PostMapping("/account/change-password")
+public String updatePassword(@RequestParam("oldPassword") String oldPassword,
+                             @RequestParam("newPassword") String newPassword,
+                             Authentication authentication, Model model) {
+    // Fetch the current user
+    User currentUser = userService.findByUsername(authentication.getName());
+
+    // Verify the old password
+    if (userService.checkPassword(currentUser, oldPassword)) {
+        // Update the password
+        userService.updatePassword(currentUser, newPassword);
+        model.addAttribute("message", "Password updated successfully");
+    } else {
+        model.addAttribute("error", "Old password is incorrect");
+    }
+
+    return "change-password"; // Redirect to the change password page
+}
+
+
+
 }
