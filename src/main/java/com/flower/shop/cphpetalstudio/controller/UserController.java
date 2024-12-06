@@ -84,7 +84,7 @@ public class UserController {
             return ResponseEntity.badRequest().body("New password does not meet security requirements.");
         }
 
-        userService.changePassword(user, newPassword);
+        userService.changePassword(user, oldPassword, newPassword);
         return ResponseEntity.ok("Password changed successfully.");
     }
 
