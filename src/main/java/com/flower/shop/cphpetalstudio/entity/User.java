@@ -4,6 +4,9 @@ import jakarta.persistence.*;
 import lombok.*;
 
 import java.time.LocalDateTime;
+import java.util.Arrays;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 @Entity
 @Table(name = "users")
@@ -27,6 +30,9 @@ public class User {
     @Column(nullable = false, unique = true)
     private String email;
 
+    /**
+     * Comma-separated roles, e.g., "ROLE_USER,ROLE_ADMIN".
+     */
     @Column(nullable = false)
     private String role;
 
@@ -35,4 +41,13 @@ public class User {
 
     @Column(name = "is_company", nullable = false)
     private boolean isCompany = false; // Default value
+
+    /**
+     * Splits the `role` field and returns a set of roles.
+     */
+    public Set<String> getRoles() {
+        return Arrays.stream(role.split(","))
+                .map(String::trim)
+                .collect(Collectors.toSet());
+    }
 }
