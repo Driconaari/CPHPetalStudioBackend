@@ -1,6 +1,5 @@
 package com.flower.shop.cphpetalstudio.entity;
 
-
 import jakarta.persistence.*;
 import lombok.Data;
 import java.time.LocalDate;
@@ -22,4 +21,17 @@ public class Subscription {
     private LocalDate startDate;
     private LocalDate endDate;
     private String frequency; // e.g., "WEEKLY", "MONTHLY"
+
+    // Explicit getters (if Lombok is not working correctly)
+    public LocalDate getStartDate() {
+        return startDate;
+    }
+
+    public LocalDate getEndDate() {
+        return endDate;
+    }
+
+    public String getFrequency() {
+        return frequency;
+    }
 }
