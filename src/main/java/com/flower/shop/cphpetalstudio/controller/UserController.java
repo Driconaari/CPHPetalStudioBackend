@@ -32,6 +32,7 @@ public class UserController {
         return ResponseEntity.ok("User " + username + " is " + (isAdmin ? "an admin" : "not an admin"));
     }
 
+    // Get user profile details (username, email) based on the currently authenticated user
     @GetMapping("/profile")
     public ResponseEntity<User> getProfile(@AuthenticationPrincipal UserDetails userDetails) {
         User user = userService.findByUsername(userDetails.getUsername());
