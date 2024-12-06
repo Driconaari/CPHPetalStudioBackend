@@ -40,7 +40,7 @@ public class AuthController {
             final UserDetails userDetails = (UserDetails) authentication.getPrincipal();
             final String jwt = jwtUtil.generateToken(userDetails);
 
-            User user = userService.getUserByUsername(loginRequest.get("username"));
+            User user = userService.findByUsername(loginRequest.get("username"));
 
             Map<String, Object> response = new HashMap<>();
             response.put("token", jwt);

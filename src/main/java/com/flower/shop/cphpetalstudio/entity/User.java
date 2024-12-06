@@ -50,4 +50,15 @@ public class User {
                 .map(String::trim)
                 .collect(Collectors.toSet());
     }
+
+
+    public boolean isCompany() {
+        return isCompany;
+    }
+
+    public void setCompany(boolean company) {
+        isCompany = company;
+    }
+
+
 }
