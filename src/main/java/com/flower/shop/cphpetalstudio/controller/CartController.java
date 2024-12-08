@@ -80,4 +80,8 @@ public class CartController {
             return ResponseEntity.badRequest().body("Failed to clear cart: " + e.getMessage());
         }
     }
+
+
 }
+
+
