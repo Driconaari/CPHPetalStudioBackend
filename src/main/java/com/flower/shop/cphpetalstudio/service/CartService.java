@@ -45,6 +45,24 @@ public class CartService {
         }
     }
 
+    public CartItem addBouquetToCart(String username, CartItem cartItem) {
+        User user = userRepository.findByUsername(username)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+        Bouquet bouquet = bouquetRepository.findById(cartItem.getBouquet().getId())
+                .orElseThrow(() -> new RuntimeException("Bouquet not found"));
+
+        Optional<CartItem> existingItem = cartItemRepository.findByUserAndBouquet(user, bouquet);
+        if (existingItem.isPresent()) {
+            CartItem item = existingItem.get();
+            item.setQuantity(item.getQuantity() + cartItem.getQuantity());
+            return cartItemRepository.save(item);
+        } else {
+            cartItem.setUser(user);
+            cartItem.setBouquet(bouquet);
+            return cartItemRepository.save(cartItem);
+        }
+    }
+
     public void removeBouquetFromCart(String username, Long cartItemId) {
         User user = userRepository.findByUsername(username)
                 .orElseThrow(() -> new RuntimeException("User not found"));
@@ -94,5 +112,20 @@ public class CartService {
         return cartItems.stream()
                 .mapToDouble(item -> item.getBouquet().getPrice() * item.getQuantity())
                 .sum();
+    }
+
+    public CartItem updateCartItem(String username, Long id, CartItem cartItem) {
+        User user = userRepository.findByUsername(username)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+        CartItem existingItem = cartItemRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Cart item not found"));
+
+        if (!existingItem.getUser().equals(user)) {
+            throw new RuntimeException("Unauthorized access to cart item");
+
+        }
+
+        existingItem.setQuantity(cartItem.getQuantity());
+        return cartItemRepository.save(existingItem);
     }
 }
