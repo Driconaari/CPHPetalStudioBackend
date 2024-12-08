@@ -5,6 +5,8 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.AllArgsConstructor;
 
+import java.time.LocalDateTime;
+
 @Entity
 @Table(name = "cart_items")
 @Data
@@ -26,9 +28,17 @@ public class CartItem {
 
     private int quantity;
 
+    @Column(name = "created_at", nullable = false, updatable = false)
+    private LocalDateTime createdAt;
+
     public CartItem(User user, Bouquet bouquet, int quantity) {
         this.user = user;
         this.bouquet = bouquet;
         this.quantity = quantity;
+    }
+
+    @PrePersist
+    protected void onCreate() {
+        createdAt = LocalDateTime.now();
     }
 }
