@@ -6,8 +6,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.math.BigDecimal;
 import java.util.List;
-
 
 @Service
 @Transactional
@@ -67,5 +67,19 @@ public class BouquetService {
         Bouquet bouquet = getBouquetById(id);
         bouquet.setStockQuantity(bouquet.getStockQuantity() + quantity);
         bouquetRepository.save(bouquet);
+    }
+
+    // New methods
+
+    public List<Bouquet> getBouquetsByIds(List<Long> bouquetIds) {
+        return bouquetRepository.findAllById(bouquetIds);
+    }
+
+    public List<Bouquet> getBouquetsUnderPrice(BigDecimal maxPrice) {
+        return bouquetRepository.findByPriceLessThanEqual(maxPrice);
+    }
+
+    public List<Bouquet> getBouquetsOverPrice(BigDecimal minPrice) {
+        return bouquetRepository.findByPriceGreaterThan(minPrice);
     }
 }
