@@ -19,14 +19,16 @@ import java.util.List;
 @RequestMapping("/shop")
 public class ShopController {
 
-    @Autowired
-    private BouquetService bouquetService;
+    private final BouquetService bouquetService;
+    private final OrderService orderService;
+    private final UserService userService;
 
     @Autowired
-    private OrderService orderService;
-
-    @Autowired
-    private UserService userService;
+    public ShopController(BouquetService bouquetService, OrderService orderService, UserService userService) {
+        this.bouquetService = bouquetService;
+        this.orderService = orderService;
+        this.userService = userService;
+    }
 
     @GetMapping
     public String viewShop(Model model,
@@ -79,5 +81,14 @@ public class ShopController {
         List<Bouquet> bouquets = bouquetService.searchBouquets(query);
         model.addAttribute("bouquets", bouquets);
         return "shop/list";
+    }
+
+    @GetMapping("/cart")
+    public String viewCart(Model model, Authentication authentication) {
+        User user = userService.findByUsername(authentication.getName());
+        // Assuming you have a method to get cart items for a user
+        // List<CartItem> cartItems = cartService.getCartItemsForUser(user);
+        // model.addAttribute("cartItems", cartItems);
+        return "shop/cart";
     }
 }
