@@ -7,6 +7,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.logging.Logger;
+
 
 @RestController
 @RequestMapping("/api/bouquets")
@@ -14,12 +16,13 @@ public class BouquetRestController {
 
     @Autowired
     private BouquetService bouquetService;
+    private static final Logger logger = Logger.getLogger(BouquetRestController.class.getName());
 
     @GetMapping
     public ResponseEntity<List<Bouquet>> getAllBouquets() {
+        logger.info("Fetching all bouquets");
         return ResponseEntity.ok(bouquetService.getAllBouquets());
     }
-
     @GetMapping("/{id}")
     public ResponseEntity<Bouquet> getBouquetById(@PathVariable Long id) {
         return ResponseEntity.ok(bouquetService.getBouquetById(id));
@@ -38,5 +41,7 @@ public class BouquetRestController {
     @GetMapping("/latest")
     public ResponseEntity<List<Bouquet>> getLatestBouquets(@RequestParam(defaultValue = "5") int limit) {
         return ResponseEntity.ok(bouquetService.getLatestBouquets(limit));
+
     }
+
 }
