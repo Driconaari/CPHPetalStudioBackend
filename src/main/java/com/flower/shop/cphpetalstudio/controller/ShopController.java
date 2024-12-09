@@ -7,48 +7,77 @@ import com.flower.shop.cphpetalstudio.service.BouquetService;
 import com.flower.shop.cphpetalstudio.service.OrderService;
 import com.flower.shop.cphpetalstudio.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
+import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 
+import java.math.BigDecimal;
 import java.util.List;
 
-@RestController
-@RequestMapping("/api/shop")
+@Controller
+@RequestMapping("/shop")
 public class ShopController {
 
-    private final BouquetService bouquetService;
-    private final OrderService orderService;
-    private final UserService userService;
+    @Autowired
+    private BouquetService bouquetService;
 
     @Autowired
-    public ShopController(BouquetService bouquetService, OrderService orderService, UserService userService) {
-        this.bouquetService = bouquetService;
-        this.orderService = orderService;
-        this.userService = userService;
+    private OrderService orderService;
+
+    @Autowired
+    private UserService userService;
+
+    @GetMapping
+    public String viewShop(Model model,
+                           @RequestParam(required = false) BigDecimal maxPrice,
+                           @RequestParam(required = false) BigDecimal minPrice,
+                           @RequestParam(required = false) String category) {
+        List<Bouquet> bouquets;
+
+        if (maxPrice != null) {
+            bouquets = bouquetService.getBouquetsUnderPrice(maxPrice);
+        } else if (minPrice != null) {
+            bouquets = bouquetService.getBouquetsOverPrice(minPrice);
+        } else if (category != null) {
+            bouquets = bouquetService.getBouquetsByCategory(category);
+        } else {
+            bouquets = bouquetService.getAllBouquets();
+        }
+
+        model.addAttribute("bouquets", bouquets);
+        return "shop/list";
     }
 
-    @GetMapping("/bouquets/{id}")
-    public ResponseEntity<?> getBouquet(@PathVariable Long id) {
-        try {
-            Bouquet bouquet = bouquetService.getBouquetById(id);
-            return ResponseEntity.ok(bouquet);
-        } catch (Exception e) {
-            return ResponseEntity.notFound().build();
-        }
+    @GetMapping("/{id}")
+    public String viewBouquet(@PathVariable Long id, Model model) {
+        model.addAttribute("bouquet", bouquetService.getBouquetById(id));
+        return "shop/view";
     }
 
-    @PostMapping("/orders")
-    public ResponseEntity<?> createOrder(@RequestBody List<Bouquet> bouquets, Authentication authentication) {
-        if (bouquets == null || bouquets.isEmpty()) {
-            return ResponseEntity.badRequest().body("Order must contain at least one bouquet");
+    @PostMapping("/order")
+    public String createOrder(@RequestParam List<Long> bouquetIds, Authentication authentication) {
+        User user = userService.findByUsername(authentication.getName());
+        List<Bouquet> bouquets = bouquetService.getBouquetsByIds(bouquetIds);
+        Order order = orderService.createOrder(user, bouquets);
+        return "redirect:/shop/order/" + order.getId();
+    }
+
+    @GetMapping("/order/{id}")
+    public String viewOrder(@PathVariable Long id, Model model, Authentication authentication) {
+        User user = userService.findByUsername(authentication.getName());
+        Order order = orderService.getOrderById(id);
+        if (!order.getUser().equals(user)) {
+            return "redirect:/shop";
         }
-        try {
-            User user = userService.findByUsername(authentication.getName());
-            Order order = orderService.createOrder(user, bouquets);
-            return ResponseEntity.ok(order);
-        } catch (Exception e) {
-            return ResponseEntity.internalServerError().body("An error occurred while creating the order: " + e.getMessage());
-        }
+        model.addAttribute("order", order);
+        return "shop/order";
+    }
+
+    @GetMapping("/search")
+    public String searchBouquets(@RequestParam String query, Model model) {
+        List<Bouquet> bouquets = bouquetService.searchBouquets(query);
+        model.addAttribute("bouquets", bouquets);
+        return "shop/list";
     }
 }
