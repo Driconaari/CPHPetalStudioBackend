@@ -4,6 +4,7 @@ import com.flower.shop.cphpetalstudio.entity.Bouquet;
 import com.flower.shop.cphpetalstudio.entity.Order;
 import com.flower.shop.cphpetalstudio.entity.User;
 import com.flower.shop.cphpetalstudio.service.BouquetService;
+import com.flower.shop.cphpetalstudio.service.CartService;
 import com.flower.shop.cphpetalstudio.service.OrderService;
 import com.flower.shop.cphpetalstudio.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -15,80 +16,79 @@ import org.springframework.web.bind.annotation.*;
 import java.math.BigDecimal;
 import java.util.List;
 
-@Controller
-@RequestMapping("/shop")
+@RestController
+@RequestMapping("/api/shop")
 public class ShopController {
 
     private final BouquetService bouquetService;
     private final OrderService orderService;
     private final UserService userService;
+    private final CartService cartService; // Assuming you have a CartService.
 
     @Autowired
-    public ShopController(BouquetService bouquetService, OrderService orderService, UserService userService) {
+    public ShopController(BouquetService bouquetService, OrderService orderService,
+                          UserService userService, CartService cartService) {
         this.bouquetService = bouquetService;
         this.orderService = orderService;
         this.userService = userService;
+        this.cartService = cartService;
     }
 
+    // Fetch all bouquets with optional filters
     @GetMapping
-    public String viewShop(Model model,
-                           @RequestParam(required = false) BigDecimal maxPrice,
-                           @RequestParam(required = false) BigDecimal minPrice,
-                           @RequestParam(required = false) String category) {
-        List<Bouquet> bouquets;
-
-        if (maxPrice != null) {
-            bouquets = bouquetService.getBouquetsUnderPrice(maxPrice);
-        } else if (minPrice != null) {
-            bouquets = bouquetService.getBouquetsOverPrice(minPrice);
-        } else if (category != null) {
-            bouquets = bouquetService.getBouquetsByCategory(category);
-        } else {
-            bouquets = bouquetService.getAllBouquets();
-        }
-
-        model.addAttribute("bouquets", bouquets);
-        return "shop/list";
+    public List<Bouquet> getAllBouquets(
+            @RequestParam(required = false) BigDecimal maxPrice,
+            @RequestParam(required = false) BigDecimal minPrice,
+            @RequestParam(required = false) String category) {
+        if (maxPrice != null) return bouquetService.getBouquetsUnderPrice(maxPrice);
+        if (minPrice != null) return bouquetService.getBouquetsOverPrice(minPrice);
+        if (category != null) return bouquetService.getBouquetsByCategory(category);
+        return bouquetService.getAllBouquets();
     }
 
+    // Get a specific bouquet by ID
     @GetMapping("/{id}")
-    public String viewBouquet(@PathVariable Long id, Model model) {
-        model.addAttribute("bouquet", bouquetService.getBouquetById(id));
-        return "shop/view";
+    public Bouquet getBouquetById(@PathVariable Long id) {
+        return bouquetService.getBouquetById(id);
     }
 
-    @PostMapping("/order")
-    public String createOrder(@RequestParam List<Long> bouquetIds, Authentication authentication) {
+    // Add a bouquet to the user's cart
+    @PostMapping("/cart/add")
+    public Cart addToCart(@RequestBody AddToCartRequest request, Authentication authentication) {
         User user = userService.findByUsername(authentication.getName());
-        List<Bouquet> bouquets = bouquetService.getBouquetsByIds(bouquetIds);
-        Order order = orderService.createOrder(user, bouquets);
-        return "redirect:/shop/order/" + order.getId();
+        Bouquet bouquet = bouquetService.getBouquetById(request.getBouquetId());
+        return cartService.addToCart(user, bouquet, request.getQuantity());
     }
 
+    // View the user's cart
+    @GetMapping("/cart")
+    public Cart viewCart(Authentication authentication) {
+        User user = userService.findByUsername(authentication.getName());
+        return cartService.getCartByUser(user);
+    }
+
+    // Remove an item from the cart
+    @PostMapping("/cart/remove")
+    public Cart removeFromCart(@RequestBody RemoveFromCartRequest request, Authentication authentication) {
+        User user = userService.findByUsername(authentication.getName());
+        return cartService.removeFromCart(user, request.getBouquetId());
+    }
+
+    // Place an order from the cart
+    @PostMapping("/order")
+    public Order createOrder(Authentication authentication) {
+        User user = userService.findByUsername(authentication.getName());
+        return orderService.createOrderFromCart(user);
+    }
+
+    // View a specific order by ID
     @GetMapping("/order/{id}")
-    public String viewOrder(@PathVariable Long id, Model model, Authentication authentication) {
+    public Order viewOrder(@PathVariable Long id, Authentication authentication) {
         User user = userService.findByUsername(authentication.getName());
         Order order = orderService.getOrderById(id);
         if (!order.getUser().equals(user)) {
-            return "redirect:/shop";
+            throw new AccessDeniedException("You are not authorized to view this order.");
         }
-        model.addAttribute("order", order);
-        return "shop/order";
-    }
-
-    @GetMapping("/search")
-    public String searchBouquets(@RequestParam String query, Model model) {
-        List<Bouquet> bouquets = bouquetService.searchBouquets(query);
-        model.addAttribute("bouquets", bouquets);
-        return "shop/list";
-    }
-
-    @GetMapping("/cart")
-    public String viewCart(Model model, Authentication authentication) {
-        User user = userService.findByUsername(authentication.getName());
-        // Assuming you have a method to get cart items for a user
-        // List<CartItem> cartItems = cartService.getCartItemsForUser(user);
-        // model.addAttribute("cartItems", cartItems);
-        return "shop/cart";
+        return order;
     }
 }
