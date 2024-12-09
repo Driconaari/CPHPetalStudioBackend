@@ -65,10 +65,11 @@ public class ShopController {
 
     // View the user's cart
     @GetMapping("/cart")
-    public CartItem viewCart(Authentication authentication) {
+    public List<CartItem> viewCart(Authentication authentication) {
         User user = userService.findByUsername(authentication.getName());
-        return cartService.getCartByUser(user);
+        return cartService.getCartByUser(user); // Returns a list of cart items
     }
+
 
     // Remove an item from the cart
     @PostMapping("/cart/remove")

@@ -121,11 +121,12 @@ public class CartService {
         return cartItemRepository.findByUser(user);
     }
 
-    public void removeFromCart(User user, Long bouquetId) {
+    public CartItem removeFromCart(User user, Long bouquetId) {
         CartItem cartItem = cartItemRepository.findByUserAndBouquetId(user, bouquetId)
                 .orElseThrow(() -> new RuntimeException("Cart item not found"));
-
-        cartItemRepository.delete(cartItem);
+        cartItemRepository.delete(cartItem); // Delete the item
+        return cartItem; // Return the deleted item
     }
+
 
 }
