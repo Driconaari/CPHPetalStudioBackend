@@ -85,5 +85,7 @@ public class BouquetService {
     }
 
 
-
+    public List<Bouquet> findAllBouquets() {
+        return bouquetRepository.findAll();
+    }
 }
