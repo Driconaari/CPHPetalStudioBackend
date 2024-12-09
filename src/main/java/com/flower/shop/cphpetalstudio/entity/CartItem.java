@@ -41,4 +41,9 @@ public class CartItem {
         this.bouquet = bouquet;
         this.quantity = quantity;
     }
+
+    // Method to get the bouquet ID from the associated bouquet
+    public Long getBouquetId() {
+        return bouquet != null ? bouquet.getId() : null;
+    }
 }

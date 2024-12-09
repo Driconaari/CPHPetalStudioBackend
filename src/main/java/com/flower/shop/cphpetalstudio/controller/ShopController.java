@@ -1,5 +1,6 @@
 package com.flower.shop.cphpetalstudio.controller;
 
+import com.flower.shop.cphpetalstudio.dto.ResponseMessage;
 import com.flower.shop.cphpetalstudio.entity.Bouquet;
 import com.flower.shop.cphpetalstudio.entity.CartItem;
 import com.flower.shop.cphpetalstudio.entity.Order;
@@ -9,6 +10,7 @@ import com.flower.shop.cphpetalstudio.service.CartService;
 import com.flower.shop.cphpetalstudio.service.OrderService;
 import com.flower.shop.cphpetalstudio.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
@@ -95,4 +97,25 @@ public class ShopController {
         }
         return order;
     }
+
+
+    // Example in Spring Boot (Java)
+    @PostMapping("/cart/add/{bouquetId}")
+    public ResponseEntity<?> addToCart(@PathVariable Long bouquetId, @RequestBody CartItem cartItem) {
+        cartService.addToCart(cartItem);
+        return ResponseEntity.ok(new ResponseMessage("Item added to cart", true));
+    }
+
+    @PostMapping("/cart/remove/{itemId}")
+    public ResponseEntity<?> removeFromCart(@PathVariable Long itemId) {
+        cartService.removeFromCart(itemId);
+        return ResponseEntity.ok(new ResponseMessage("Item removed from cart", true));
+    }
+
+    @GetMapping("/cart/count")
+    public ResponseEntity<Integer> getCartCount() {
+        int count = cartService.getCartCount();
+        return ResponseEntity.ok(count);
+    }
+
 }

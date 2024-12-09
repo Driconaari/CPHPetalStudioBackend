@@ -10,7 +10,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 @Service
@@ -20,6 +22,7 @@ public class CartService {
     private final CartItemRepository cartItemRepository;
     private final UserRepository userRepository;
     private final BouquetRepository bouquetRepository;
+    private Map<Long, CartItem> cart = new HashMap<>();
 
     @Autowired
     public CartService(CartItemRepository cartItemRepository,
@@ -122,11 +125,36 @@ public class CartService {
     }
 
     public CartItem removeFromCart(User user, Long bouquetId) {
-        CartItem cartItem = cartItemRepository.findByUserAndBouquetId(user, bouquetId)
+
+        // Use the updated method to match the repository's query method
+        CartItem cartItem = cartItemRepository.findByUserAndBouquet_Id(user, bouquetId)
                 .orElseThrow(() -> new RuntimeException("Cart item not found"));
+
         cartItemRepository.delete(cartItem); // Delete the item
+
         return cartItem; // Return the deleted item
     }
 
 
+
+    public void addToCart(CartItem cartItem) {
+        Long itemId = cartItem.getBouquetId();
+        if (cart.containsKey(itemId)) {
+            CartItem existingItem = cart.get(itemId);
+            existingItem.setQuantity(existingItem.getQuantity() + cartItem.getQuantity());  // Update quantity if item already in cart
+        } else {
+            cart.put(itemId, cartItem);  // Add new item if not present in cart
+        }
+    }
+
+    public void removeFromCart(Long itemId) {
+        cart.remove(itemId);  // Remove item from the cart by its item ID
+    }
+
+    public int getCartCount() {
+        // Return total count of items in the cart. Assuming count is quantity of all items.
+        return cart.values().stream()
+                .mapToInt(CartItem::getQuantity)
+                .sum();
+    }
 }
