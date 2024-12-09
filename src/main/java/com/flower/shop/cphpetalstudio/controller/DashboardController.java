@@ -4,6 +4,8 @@ import com.flower.shop.cphpetalstudio.entity.Bouquet;
 import com.flower.shop.cphpetalstudio.entity.User;
 import com.flower.shop.cphpetalstudio.service.BouquetService;
 import com.flower.shop.cphpetalstudio.service.UserService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -23,6 +25,8 @@ public class DashboardController {
 
     private final UserService userService;
     private final BouquetService bouquetService;
+    private static final Logger logger = LoggerFactory.getLogger(DashboardController.class);
+
 
     @Autowired
     public DashboardController(UserService userService, BouquetService bouquetService) {
@@ -33,15 +37,14 @@ public class DashboardController {
     // This method handles both user and admin dashboard rendering.
     @GetMapping("/dashboard")
     public String dashboard(Model model, Authentication authentication) {
-        // Fetching the user details based on the username in the authentication object (which is extracted from the JWT)
+        // Fetching the user details based on the username in the authentication object
         User user = userService.findByUsername(authentication.getName());
 
-        // Get featured bouquets (you can modify this depending on your business logic)
-        List<Bouquet> featuredBouquets = bouquetService.getFeaturedBouquets();
+        // Log user details
+        logger.info("Fetched user: {}", user);
 
-        // Add the user and featured bouquets to the model, so they can be accessed in the Thymeleaf template
+        // Add the user to the model
         model.addAttribute("user", user);
-        model.addAttribute("bouquets", featuredBouquets);
 
         // Check the user's role and return the appropriate dashboard page
         if (authentication.getAuthorities().contains(new SimpleGrantedAuthority("ROLE_ADMIN"))) {
