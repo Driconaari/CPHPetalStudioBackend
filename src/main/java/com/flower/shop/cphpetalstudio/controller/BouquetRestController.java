@@ -11,6 +11,7 @@ import java.util.logging.Logger;
 
 
 @RestController
+@CrossOrigin
 @RequestMapping("/api/bouquets")
 public class BouquetRestController {
 
@@ -18,11 +19,14 @@ public class BouquetRestController {
     private BouquetService bouquetService;
     private static final Logger logger = Logger.getLogger(BouquetRestController.class.getName());
 
+    /*
     @GetMapping
     public ResponseEntity<List<Bouquet>> getAllBouquets() {
         logger.info("Fetching all bouquets");
         return ResponseEntity.ok(bouquetService.getAllBouquets());
     }
+
+     */
     @GetMapping("/{id}")
     public ResponseEntity<Bouquet> getBouquetById(@PathVariable Long id) {
         return ResponseEntity.ok(bouquetService.getBouquetById(id));
@@ -43,5 +47,11 @@ public class BouquetRestController {
         return ResponseEntity.ok(bouquetService.getLatestBouquets(limit));
 
     }
+
+    @GetMapping
+    public ResponseEntity<List<Bouquet>> getAllBouquets() {
+        return ResponseEntity.ok(bouquetService.getAllBouquets());
+    }
+
 
 }

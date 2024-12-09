@@ -13,23 +13,23 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.core.Authentication;
+import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 import com.flower.shop.cphpetalstudio.dto.AddToCartRequest;
 import com.flower.shop.cphpetalstudio.dto.RemoveFromCartRequest;
 
-
 import java.math.BigDecimal;
 import java.util.List;
 
-@RestController
-@RequestMapping("/api/shop")
+@Controller
+@RequestMapping("/shop")  // For rendering views
 public class ShopController {
 
     private final BouquetService bouquetService;
     private final OrderService orderService;
     private final UserService userService;
-    private final CartService cartService; // Assuming you have a CartService.
+    private final CartService cartService;
 
     @Autowired
     public ShopController(BouquetService bouquetService, OrderService orderService,
@@ -40,8 +40,32 @@ public class ShopController {
         this.cartService = cartService;
     }
 
-    // Fetch all bouquets with optional filters
+    // This is for rendering the shop page
     @GetMapping
+    public String getShopPage(@RequestParam(required = false) BigDecimal maxPrice,
+                              @RequestParam(required = false) BigDecimal minPrice,
+                              @RequestParam(required = false) String category,
+                              Model model) {
+
+        List<Bouquet> bouquets;
+
+        if (maxPrice != null) {
+            bouquets = bouquetService.getBouquetsUnderPrice(maxPrice);
+        } else if (minPrice != null) {
+            bouquets = bouquetService.getBouquetsOverPrice(minPrice);
+        } else if (category != null) {
+            bouquets = bouquetService.getBouquetsByCategory(category);
+        } else {
+            bouquets = bouquetService.getAllBouquets();
+        }
+
+        model.addAttribute("bouquets", bouquets);
+        return "shop";  // This will render the updated shop page with filtered bouquets
+    }
+
+
+    // Fetch all bouquets with optional filters
+    @GetMapping("/bouquets")
     public List<Bouquet> getAllBouquets(
             @RequestParam(required = false) BigDecimal maxPrice,
             @RequestParam(required = false) BigDecimal minPrice,
@@ -53,7 +77,7 @@ public class ShopController {
     }
 
     // Get a specific bouquet by ID
-    @GetMapping("/{id}")
+    @GetMapping("/bouquets/{id}")
     public Bouquet getBouquetById(@PathVariable Long id) {
         return bouquetService.getBouquetById(id);
     }
@@ -72,7 +96,6 @@ public class ShopController {
         User user = userService.findByUsername(authentication.getName());
         return cartService.getCartByUser(user); // Returns a list of cart items
     }
-
 
     // Remove an item from the cart
     @PostMapping("/cart/remove")
@@ -99,7 +122,6 @@ public class ShopController {
         return order;
     }
 
-
     // Example in Spring Boot (Java)
     @PostMapping("/cart/add/{bouquetId}")
     public ResponseEntity<?> addToCart(@PathVariable Long bouquetId, @RequestBody CartItem cartItem) {
@@ -118,14 +140,4 @@ public class ShopController {
         int count = cartService.getCartCount();
         return ResponseEntity.ok(count);
     }
-
-
-    @GetMapping("/shop")
-    public String getShopPage(Model model) {
-        List<Bouquet> bouquets = bouquetService.getAllBouquets();
-        System.out.println("Bouquets: " + bouquets); // Check if bouquets are being passed
-        model.addAttribute("bouquets", bouquets);
-        return "shop";
-    }
-
 }
