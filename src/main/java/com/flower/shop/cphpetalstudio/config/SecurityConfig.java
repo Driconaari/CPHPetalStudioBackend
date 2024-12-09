@@ -36,25 +36,28 @@ public class SecurityConfig {
                     corsConfiguration.setAllowCredentials(true);
                     return corsConfiguration;
                 }))
-                .csrf(csrf -> csrf.disable()) // Disable CSRF protection for APIs
+                .csrf(csrf -> csrf.disable()) // Disable CSRF for APIs
                 .authorizeHttpRequests(authz -> authz
-                        // Public Endpoints
+                        // Public endpoints
                         .requestMatchers("/api/auth/**", "/", "/register", "/login").permitAll()
-                        .requestMatchers("/bouquets", "/bouquets/{id}", "/api/bouquets").permitAll()
+                        .requestMatchers("/shop", "/shop/bouquets", "/shop/bouquets/{id}").permitAll()
 
-                        // Admin-Only Endpoints
+                        // User-specific actions
+                        .requestMatchers("/shop/cart", "/shop/cart/add", "/shop/cart/remove", "/shop/order").authenticated()
+
+                        // Admin-specific actions
                         .requestMatchers("/bouquets/create", "/bouquets/{id}/edit", "/bouquets/{id}/delete").hasAuthority("ROLE_ADMIN")
                         .requestMatchers("/api/admin/**", "/admin/**").hasAuthority("ROLE_ADMIN")
 
-                        // Authenticated-Only Endpoints
-                        .requestMatchers("/dashboard").authenticated()
+                        // Authenticated user actions
+                        .requestMatchers("/dashboard", "/shop/order/{id}").authenticated()
 
-                        // Catch-All for All Other Requests
+                        // Catch-all
                         .anyRequest().authenticated()
                 )
                 .sessionManagement(session ->
                         session.sessionCreationPolicy(SessionCreationPolicy.STATELESS)) // Stateless session for JWT-based authentication
-                .addFilterBefore(jwtRequestFilter, UsernamePasswordAuthenticationFilter.class); // Add JWT filter before username/password filter
+                .addFilterBefore(jwtRequestFilter, UsernamePasswordAuthenticationFilter.class);
 
         return http.build();
     }
