@@ -86,6 +86,6 @@ public class BouquetService {
 
 
     public List<Bouquet> findAllBouquets() {
-        return bouquetRepository.findAll();
+        return bouquetRepository.findAll(); // Make sure this returns the bouquets correctly
     }
 }

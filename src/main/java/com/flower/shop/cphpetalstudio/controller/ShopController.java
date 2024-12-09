@@ -118,10 +118,14 @@ public class ShopController {
         int count = cartService.getCartCount();
         return ResponseEntity.ok(count);
     }
+
+
     @GetMapping("/shop")
     public String getShopPage(Model model) {
-        List<Bouquet> bouquets = bouquetService.findAllBouquets(); // Make sure this method returns a list of bouquets
-        model.addAttribute("bouquets", bouquets); // Pass the bouquets list to the Thymeleaf template
-        return "shop"; // The Thymeleaf template name (shop.html)
+        List<Bouquet> bouquets = bouquetService.getAllBouquets();
+        System.out.println("Bouquets: " + bouquets); // Check if bouquets are being passed
+        model.addAttribute("bouquets", bouquets);
+        return "shop";
     }
+
 }
