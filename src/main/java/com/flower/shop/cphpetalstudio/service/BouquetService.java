@@ -29,6 +29,7 @@ public class BouquetService {
                 .orElseThrow(() -> new RuntimeException("Bouquet not found with id: " + id));
     }
 
+
     public List<Bouquet> getFeaturedBouquets() {
         return bouquetRepository.findTop5ByFeaturedTrueOrderByCreatedAtDesc();
     }
@@ -82,4 +83,7 @@ public class BouquetService {
     public List<Bouquet> getBouquetsOverPrice(BigDecimal minPrice) {
         return bouquetRepository.findByPriceGreaterThan(minPrice);
     }
+
+
+
 }

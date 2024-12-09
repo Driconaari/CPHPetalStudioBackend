@@ -23,4 +23,6 @@ public interface CartItemRepository extends JpaRepository<CartItem, Long> {
     boolean existsByUserAndBouquet(User user, Bouquet bouquet);
 
     List<CartItem> findByUserOrderByCreatedAtDesc(User user);
+
+    Optional<Object> findByUserAndBouquetId(User user, Long bouquetId);
 }

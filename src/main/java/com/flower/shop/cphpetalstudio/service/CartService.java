@@ -102,4 +102,30 @@ public class CartService {
 
         cartItemRepository.deleteByUser(user);
     }
+
+
+    public CartItem addToCart(User user, Bouquet bouquet, int quantity) {
+        Optional<CartItem> existingItem = cartItemRepository.findByUserAndBouquet(user, bouquet);
+
+        if (existingItem.isPresent()) {
+            CartItem cartItem = existingItem.get();
+            cartItem.setQuantity(cartItem.getQuantity() + quantity);
+            return cartItemRepository.save(cartItem);
+        } else {
+            CartItem newCartItem = new CartItem(user, bouquet, quantity);
+            return cartItemRepository.save(newCartItem);
+        }
+    }
+
+    public List<CartItem> getCartByUser(User user) {
+        return cartItemRepository.findByUser(user);
+    }
+
+    public void removeFromCart(User user, Long bouquetId) {
+        CartItem cartItem = cartItemRepository.findByUserAndBouquetId(user, bouquetId)
+                .orElseThrow(() -> new RuntimeException("Cart item not found"));
+
+        cartItemRepository.delete(cartItem);
+    }
+
 }

@@ -1,9 +1,7 @@
 package com.flower.shop.cphpetalstudio.entity;
 
 import jakarta.persistence.*;
-import lombok.Data;
-import lombok.NoArgsConstructor;
-import lombok.AllArgsConstructor;
+import lombok.*;
 
 import java.time.LocalDateTime;
 
@@ -18,27 +16,29 @@ public class CartItem {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "user_id", nullable = false)
     private User user;
 
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "bouquet_id", nullable = false)
     private Bouquet bouquet;
 
+    @Column(nullable = false)
     private int quantity;
 
     @Column(name = "created_at", nullable = false, updatable = false)
     private LocalDateTime createdAt;
 
+    @PrePersist
+    private void onCreate() {
+        createdAt = LocalDateTime.now();
+    }
+
+    // Additional constructor for convenient initialization
     public CartItem(User user, Bouquet bouquet, int quantity) {
         this.user = user;
         this.bouquet = bouquet;
         this.quantity = quantity;
-    }
-
-    @PrePersist
-    protected void onCreate() {
-        createdAt = LocalDateTime.now();
     }
 }

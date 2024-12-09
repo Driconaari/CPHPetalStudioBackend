@@ -1,6 +1,7 @@
 package com.flower.shop.cphpetalstudio.controller;
 
 import com.flower.shop.cphpetalstudio.entity.Bouquet;
+import com.flower.shop.cphpetalstudio.entity.CartItem;
 import com.flower.shop.cphpetalstudio.entity.Order;
 import com.flower.shop.cphpetalstudio.entity.User;
 import com.flower.shop.cphpetalstudio.service.BouquetService;
@@ -8,6 +9,7 @@ import com.flower.shop.cphpetalstudio.service.CartService;
 import com.flower.shop.cphpetalstudio.service.OrderService;
 import com.flower.shop.cphpetalstudio.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -54,7 +56,7 @@ public class ShopController {
 
     // Add a bouquet to the user's cart
     @PostMapping("/cart/add")
-    public Cart addToCart(@RequestBody AddToCartRequest request, Authentication authentication) {
+    public CartItem addToCart(@RequestBody AddToCartRequest request, Authentication authentication) {
         User user = userService.findByUsername(authentication.getName());
         Bouquet bouquet = bouquetService.getBouquetById(request.getBouquetId());
         return cartService.addToCart(user, bouquet, request.getQuantity());
@@ -62,14 +64,14 @@ public class ShopController {
 
     // View the user's cart
     @GetMapping("/cart")
-    public Cart viewCart(Authentication authentication) {
+    public CartItem viewCart(Authentication authentication) {
         User user = userService.findByUsername(authentication.getName());
         return cartService.getCartByUser(user);
     }
 
     // Remove an item from the cart
     @PostMapping("/cart/remove")
-    public Cart removeFromCart(@RequestBody RemoveFromCartRequest request, Authentication authentication) {
+    public CartItem removeFromCart(@RequestBody RemoveFromCartRequest request, Authentication authentication) {
         User user = userService.findByUsername(authentication.getName());
         return cartService.removeFromCart(user, request.getBouquetId());
     }
