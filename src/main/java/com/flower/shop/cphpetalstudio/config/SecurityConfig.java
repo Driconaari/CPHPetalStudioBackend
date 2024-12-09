@@ -40,7 +40,7 @@ public class SecurityConfig {
                 .authorizeHttpRequests(authz -> authz
                         // Public endpoints
                         .requestMatchers("/api/auth/**", "/", "/register", "/login").permitAll()
-                        .requestMatchers("/shop", "/shop/bouquets", "/shop/bouquets/{id}").permitAll()
+                        .requestMatchers("/shop", "/shop/bouquets", "/shop/bouquets/{id}","\"/api/bouquets\"").permitAll()
 
                         // User-specific actions
                         .requestMatchers("/shop/cart", "/shop/cart/add", "/shop/cart/remove", "/shop/order").authenticated()
