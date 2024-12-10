@@ -1,4 +1,4 @@
-package com.flower.shop.cphpetalstudio.controller;
+package com.flower.shop.cphpetalstudio.config.TestControllers;
 
 
 import org.springframework.security.core.Authentication;

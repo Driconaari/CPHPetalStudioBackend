@@ -36,7 +36,7 @@ public class User {
     @Column(nullable = false)
     private String role;
 
-    @Column(name = "created_at")
+    @Column(name = "created_at", nullable = false, updatable = false)
     private LocalDateTime createdAt = LocalDateTime.now(); // Default value
 
     @Column(name = "is_company", nullable = false)
@@ -52,17 +52,5 @@ public class User {
         return Arrays.stream(role.split(","))
                 .map(String::trim)
                 .collect(Collectors.toSet());
-    }
-
-    public boolean isCompany() {
-        return isCompany;
-    }
-
-    public void setCompany(boolean company) {
-        isCompany = company;
-    }
-
-    public Cart getCart() {
-        return cart;
     }
 }

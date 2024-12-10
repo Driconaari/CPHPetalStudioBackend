@@ -35,22 +35,5 @@ public class CartItem {
         createdAt = LocalDateTime.now();
     }
 
-    public CartItem(Cart cart, Bouquet bouquet, int quantity) {
-        this.cart = cart;
-        this.bouquet = bouquet;
-        this.quantity = quantity;
-    }
-
-
-    @ManyToOne
-    @JoinColumn(name = "user_id")
-    private User user;
-
-    public User getUser() {
-        return user;
-    }
-
-    public void setUser(User user) {
-        this.user = user;
-    }
+    // Removed redundant 'user' field in CartItem, as it can be accessed through Cart
 }
