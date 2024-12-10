@@ -107,4 +107,20 @@ public class CartService {
         Cart cart = user.getCart();
         return cart != null ? cartItemRepository.countByCart(cart) : 0;
     }
+
+
+    public int getCartCount(User user) {
+        return cartRepository.findByUser(user)
+                .stream()
+                .flatMap(cart -> cart.getItems().stream())
+        .mapToInt(CartItem::getQuantity)
+                .sum();
+    }
+
+    public List<CartItem> getCartItemsForUser(User user) {
+        return cartRepository.findByUser(user)
+                .stream()
+                .flatMap(cart -> cart.getItems().stream())
+                .toList();
+    }
 }

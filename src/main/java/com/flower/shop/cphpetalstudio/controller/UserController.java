@@ -1,5 +1,6 @@
 package com.flower.shop.cphpetalstudio.controller;
 
+import com.flower.shop.cphpetalstudio.dto.UserProfile;
 import com.flower.shop.cphpetalstudio.entity.User;
 import com.flower.shop.cphpetalstudio.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -8,6 +9,8 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
+
+import java.security.Principal;
 
 @RestController
 @RequestMapping("/api/user")
@@ -33,7 +36,17 @@ public class UserController {
     }
 
     // Get user profile details (username, email) based on the currently authenticated user
-    @GetMapping("/profile")
+    public ResponseEntity<UserProfile> getUserProfile(Principal principal) {
+        User user = userService.findByUsername(principal.getName());
+        if (user == null) {
+            return ResponseEntity.notFound().build();
+        }
+
+        return ResponseEntity.ok(new UserProfile(user.getUsername(), user.getEmail()));
+    }
+
+
+    /*@GetMapping("/profile")
     public ResponseEntity<User> getProfile(@AuthenticationPrincipal UserDetails userDetails) {
         User user = userService.findByUsername(userDetails.getUsername());
         if (user == null) {
@@ -41,6 +54,8 @@ public class UserController {
         }
         return ResponseEntity.ok(user);
     }
+
+     */
 
     @PutMapping("/edit")
     public ResponseEntity<?> updateProfile(@RequestBody User updatedUser, @AuthenticationPrincipal UserDetails userDetails) {

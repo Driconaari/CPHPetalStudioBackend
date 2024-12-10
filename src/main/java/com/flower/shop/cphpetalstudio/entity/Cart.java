@@ -4,6 +4,7 @@ import jakarta.persistence.*;
 import lombok.*;
 
 import java.time.LocalDateTime;
+import java.util.Collection;
 import java.util.List;
 
 @Entity
@@ -35,5 +36,9 @@ public class Cart {
     public Cart(User user, List<CartItem> items) {
         this.user = user;
         this.items = items;
+    }
+
+    public Collection<Object> getCartItems() {
+        return getCartItems();
     }
 }

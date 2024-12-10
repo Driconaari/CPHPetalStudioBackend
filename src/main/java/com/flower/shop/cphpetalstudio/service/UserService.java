@@ -71,5 +71,9 @@ public class UserService {
         userRepository.save(user);
     }
 
+    public User getLoggedInUser() {
+        return getUserByUsername("user");
+    }
+
     // Other methods...
 }

@@ -4,13 +4,15 @@ import com.flower.shop.cphpetalstudio.dto.AddToCartRequest;
 import com.flower.shop.cphpetalstudio.dto.ApiResponse;
 import com.flower.shop.cphpetalstudio.dto.UpdateCartItemRequest;
 import com.flower.shop.cphpetalstudio.entity.CartItem;
+import com.flower.shop.cphpetalstudio.entity.User;
 import com.flower.shop.cphpetalstudio.service.CartService;
+import com.flower.shop.cphpetalstudio.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
+import java.security.Principal;
 import java.util.List;
 
 @RestController
@@ -18,10 +20,20 @@ import java.util.List;
 public class CartController {
 
     private final CartService cartService;
+    private final UserService userService;
 
     @Autowired
-    public CartController(CartService cartService) {
+    public CartController(CartService cartService, UserService userService) {
         this.cartService = cartService;
+        this.userService = userService;
+    }
+
+    // Get cart items for logged-in user
+    @GetMapping
+    public ResponseEntity<List<CartItem>> getCartItems(Principal principal) {
+        User user = userService.getLoggedInUser();
+        List<CartItem> cartItems = cartService.getCartItemsForUser(user);
+        return ResponseEntity.ok(cartItems);
     }
 
     // Add bouquet to cart
@@ -37,7 +49,6 @@ public class CartController {
     }
 
     // Remove bouquet from cart
-    @PreAuthorize("hasRole('USER')")
     @DeleteMapping("/remove/{id}")
     public ResponseEntity<ApiResponse> removeBouquetFromCart(@PathVariable Long id, Authentication authentication) {
         try {
@@ -49,21 +60,7 @@ public class CartController {
         }
     }
 
-    // Get cart for the user
-    @PreAuthorize("hasRole('USER')")
-    @GetMapping
-    public ResponseEntity<?> getCart(Authentication authentication) {
-        try {
-            String username = authentication.getName();
-            List<CartItem> cartItems = cartService.getCartForUser(username);
-            return ResponseEntity.ok(cartItems);
-        } catch (Exception e) {
-            return ResponseEntity.badRequest().body(new ApiResponse("Failed to retrieve cart: " + e.getMessage(), false));
-        }
-    }
-
     // Update cart item quantity
-    @PreAuthorize("hasRole('USER')")
     @PutMapping("/update/{id}")
     public ResponseEntity<ApiResponse> updateCartItem(@PathVariable Long id, @RequestBody UpdateCartItemRequest request, Authentication authentication) {
         try {
@@ -75,8 +72,7 @@ public class CartController {
         }
     }
 
-    // Clear cart
-    @PreAuthorize("hasRole('USER')")
+    // Clear cart for the user
     @DeleteMapping("/clear")
     public ResponseEntity<ApiResponse> clearCart(Authentication authentication) {
         try {
@@ -88,12 +84,19 @@ public class CartController {
         }
     }
 
-    // Get cart item count
-    @PreAuthorize("hasRole('USER')")
+    // Get cart item count for the user
     @GetMapping("/count")
     public ResponseEntity<Integer> getCartCount(Authentication authentication) {
         String username = authentication.getName();
         int count = cartService.getCartItemCount(username);
+        return ResponseEntity.ok(count);
+    }
+
+    // Get cart item count (for user logged in via Principal)
+    @GetMapping("/cart/count")
+    public ResponseEntity<Integer> getCartCountForUser(Principal principal) {
+        User loggedInUser = userService.getLoggedInUser();
+        int count = cartService.getCartCount(loggedInUser);
         return ResponseEntity.ok(count);
     }
 }
