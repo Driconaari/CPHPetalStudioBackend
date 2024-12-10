@@ -29,7 +29,7 @@ public class CartController {
     public ResponseEntity<ApiResponse> addBouquetToCart(@RequestBody AddToCartRequest request, Authentication authentication) {
         try {
             String username = authentication.getName();
-            CartItem addedItem = cartService.addBouquetToCart(username, request.getBouquetId(), request.getQuantity());
+            cartService.addBouquetToCart(username, request.getBouquetId(), request.getQuantity());
             return ResponseEntity.ok(new ApiResponse("Item added to cart successfully", true));
         } catch (Exception e) {
             return ResponseEntity.badRequest().body(new ApiResponse("Failed to add bouquet to cart: " + e.getMessage(), false));
@@ -65,7 +65,7 @@ public class CartController {
     public ResponseEntity<ApiResponse> updateCartItem(@PathVariable Long id, @RequestBody UpdateCartItemRequest request, Authentication authentication) {
         try {
             String username = authentication.getName();
-            CartItem updatedItem = cartService.updateCartItem(username, id, request.getQuantity());
+            cartService.updateCartItem(username, id, request.getQuantity());
             return ResponseEntity.ok(new ApiResponse("Cart item updated successfully", true));
         } catch (Exception e) {
             return ResponseEntity.badRequest().body(new ApiResponse("Failed to update cart item: " + e.getMessage(), false));

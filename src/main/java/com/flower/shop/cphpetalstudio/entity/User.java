@@ -42,6 +42,9 @@ public class User {
     @Column(name = "is_company", nullable = false)
     private boolean isCompany = false; // Default value
 
+    @OneToOne(mappedBy = "user", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    private Cart cart;
+
     /**
      * Splits the `role` field and returns a set of roles.
      */
@@ -51,7 +54,6 @@ public class User {
                 .collect(Collectors.toSet());
     }
 
-
     public boolean isCompany() {
         return isCompany;
     }
@@ -60,5 +62,7 @@ public class User {
         isCompany = company;
     }
 
-
+    public Cart getCart() {
+        return cart;
+    }
 }

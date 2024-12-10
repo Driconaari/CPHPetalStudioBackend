@@ -14,7 +14,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.List;
-
+/*
 @Service
 @Transactional
 public class OrderService {
@@ -121,9 +121,8 @@ public class OrderService {
         return orderRepository.findByUserAndOrderDateBetween(user, startDate, endDate);
     }
 
-
     public Order createOrderFromCart(User user) {
-        List<CartItem> cartItems = cartItemRepository.findByUser(user);
+        List<CartItem> cartItems = cartItemRepository.findByCart_User(user);
 
         if (cartItems.isEmpty()) {
             throw new RuntimeException("Cart is empty. Cannot create order.");
@@ -142,10 +141,10 @@ public class OrderService {
         order.setStatus("PLACED");
         order.setOrderDate(LocalDateTime.now());
 
-        cartItemRepository.deleteByUser(user); // Clear the cart after placing the order
+        cartItemRepository.deleteByCart_User(user); // Clear the cart after placing the order
 
         return orderRepository.save(order);
     }
-
-
 }
+
+ */
