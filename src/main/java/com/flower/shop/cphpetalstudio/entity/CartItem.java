@@ -30,6 +30,12 @@ public class CartItem {
     @Column(name = "created_at", nullable = false, updatable = false)
     private LocalDateTime createdAt;
 
+    public CartItem(Cart cart, Bouquet bouquet, int quantity) {
+        this.cart = cart;
+        this.bouquet = bouquet;
+        this.quantity = quantity;
+    }
+
     @PrePersist
     private void onCreate() {
         createdAt = LocalDateTime.now();

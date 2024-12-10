@@ -50,7 +50,7 @@ public class CartService {
                 cart = cartRepository.save(cart);
             }
 
-            CartItem cartItem = new CartItem();
+            CartItem cartItem = new CartItem(cart, bouquet, quantity);
             cartItem.setCart(cart);
             cartItem.setBouquet(bouquet);
             cartItem.setQuantity(quantity);

@@ -40,4 +40,7 @@ public interface CartItemRepository extends JpaRepository<CartItem, Long> {
     void deleteAllByCart(Cart cart);
 
     int countByCart(Cart cart);
+
+    Object findByCartAndBouquet(Cart cart, Bouquet bouquet);
+
 }
