@@ -33,6 +33,7 @@ public class CartService {
         this.bouquetRepository = bouquetRepository;
     }
 
+    /*
     // Add a bouquet to the user's cart
     public CartItem addBouquetToCart(String username, Long bouquetId, int quantity) {
         User user = userRepository.findByUsername(username)
@@ -57,6 +58,8 @@ public class CartService {
         }
     }
 
+
+     */
     // Remove a bouquet from the user's cart
     public void removeBouquetFromCart(String username, Long cartItemId) {
         User user = userRepository.findByUsername(username)
