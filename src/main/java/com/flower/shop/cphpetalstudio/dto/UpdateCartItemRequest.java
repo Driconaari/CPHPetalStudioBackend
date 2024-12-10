@@ -8,5 +8,11 @@ public class UpdateCartItemRequest {
 
     @Min(1)
     private int quantity;
+
+    public int getQuantity() {
+        return quantity;
+    }
+
+
     // Getters and Setters
 }
