@@ -49,9 +49,7 @@ public class UserController {
         return ResponseEntity.ok(user);
     }
 
-
-
-
+    
 
     @PutMapping("/edit")
     public ResponseEntity<?> updateProfile(@RequestBody User updatedUser, @AuthenticationPrincipal UserDetails userDetails) {
