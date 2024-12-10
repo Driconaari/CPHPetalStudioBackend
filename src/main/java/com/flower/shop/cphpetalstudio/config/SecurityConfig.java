@@ -40,6 +40,9 @@ public class SecurityConfig {
                         .requestMatchers("/api/auth/**", "/", "/register", "/login", "/css/**", "/js/**").permitAll()
                         .requestMatchers("/shop/**", "/api/bouquets/**").permitAll()
                         .requestMatchers("/api/cart/**").authenticated()
+                        .requestMatchers("/api/user/profile").authenticated() // Ensure this is accessible for authenticated users
+
+
 
                         // Admin-Only Endpoints
                         .requestMatchers("/admin/**", "/api/admin/**").hasAuthority("ROLE_ADMIN")

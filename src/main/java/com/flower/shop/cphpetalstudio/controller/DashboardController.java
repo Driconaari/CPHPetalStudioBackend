@@ -13,7 +13,6 @@ import org.springframework.web.bind.annotation.*;
 
 @Controller
 @CrossOrigin
-
 public class DashboardController {
 
     private final UserService userService;
