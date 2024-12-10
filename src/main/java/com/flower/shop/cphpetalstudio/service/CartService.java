@@ -6,10 +6,12 @@ import com.flower.shop.cphpetalstudio.entity.Bouquet;
 import com.flower.shop.cphpetalstudio.repository.CartItemRepository;
 import com.flower.shop.cphpetalstudio.repository.UserRepository;
 import com.flower.shop.cphpetalstudio.repository.BouquetRepository;
+import lombok.NonNull;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import javax.validation.constraints.Min;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -127,16 +129,16 @@ public class CartService {
         return cartItemRepository.findByUser(user);
     }
 
-    public CartItem removeFromCart(User user, Long bouquetId) {
-
-        // Use the updated method to match the repository's query method
-        CartItem cartItem = cartItemRepository.findByUserAndBouquet_Id(user, bouquetId)
+    public CartItem removeFromCart(User user, Long cartItemId) {
+        CartItem cartItem = cartItemRepository.findById(cartItemId)
                 .orElseThrow(() -> new RuntimeException("Cart item not found"));
-
-        cartItemRepository.delete(cartItem); // Delete the item
-
-        return cartItem; // Return the deleted item
+        if (!cartItem.getUser().equals(user)) {
+            throw new RuntimeException("Unauthorized access to cart item");
+        }
+        cartItemRepository.delete(cartItem);
+        return cartItem;
     }
+
 
 
 
@@ -161,4 +163,15 @@ public class CartService {
                 .sum();
     }
 
+    public CartItem addBouquetToCart(String username, @NonNull Long bouquetId, @Min(1) int quantity) {
+        User user = userRepository.findByUsername(username)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+
+        Bouquet bouquet = bouquetRepository.findById(bouquetId)
+                .orElseThrow(() -> new RuntimeException("Bouquet not found"));
+
+        CartItem cartItem = new CartItem(user, bouquet, quantity);
+        return cartItemRepository.save(cartItem);
+
+    }
 }
