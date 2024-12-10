@@ -24,6 +24,7 @@ public class CartController {
         this.cartService = cartService;
     }
 
+    // Add bouquet to cart
     @PostMapping("/add")
     public ResponseEntity<ApiResponse> addBouquetToCart(@RequestBody AddToCartRequest request, Authentication authentication) {
         try {
@@ -35,6 +36,7 @@ public class CartController {
         }
     }
 
+    // Remove bouquet from cart
     @PreAuthorize("hasRole('USER')")
     @DeleteMapping("/remove/{id}")
     public ResponseEntity<ApiResponse> removeBouquetFromCart(@PathVariable Long id, Authentication authentication) {
@@ -47,6 +49,7 @@ public class CartController {
         }
     }
 
+    // Get cart for the user
     @PreAuthorize("hasRole('USER')")
     @GetMapping
     public ResponseEntity<?> getCart(Authentication authentication) {
@@ -59,6 +62,7 @@ public class CartController {
         }
     }
 
+    // Update cart item quantity
     @PreAuthorize("hasRole('USER')")
     @PutMapping("/update/{id}")
     public ResponseEntity<ApiResponse> updateCartItem(@PathVariable Long id, @RequestBody UpdateCartItemRequest request, Authentication authentication) {
@@ -71,6 +75,7 @@ public class CartController {
         }
     }
 
+    // Clear cart
     @PreAuthorize("hasRole('USER')")
     @DeleteMapping("/clear")
     public ResponseEntity<ApiResponse> clearCart(Authentication authentication) {
@@ -83,6 +88,7 @@ public class CartController {
         }
     }
 
+    // Get cart item count
     @PreAuthorize("hasRole('USER')")
     @GetMapping("/count")
     public ResponseEntity<Integer> getCartCount(Authentication authentication) {

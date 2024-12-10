@@ -1,5 +1,6 @@
 package com.flower.shop.cphpetalstudio.repository;
 
+import com.flower.shop.cphpetalstudio.entity.Cart;
 import com.flower.shop.cphpetalstudio.entity.CartItem;
 import com.flower.shop.cphpetalstudio.entity.User;
 import com.flower.shop.cphpetalstudio.entity.Bouquet;
@@ -33,4 +34,10 @@ public interface CartItemRepository extends JpaRepository<CartItem, Long> {
 
     // Find CartItem by User and Bouquet_Id through Cart (Cart -> User -> Bouquet -> Bouquet_Id)
     Optional<CartItem> findByCart_UserAndBouquet_Id(User user, Long bouquetId);
+
+    List<CartItem> findByCart(Cart cart);
+
+    void deleteAllByCart(Cart cart);
+
+    int countByCart(Cart cart);
 }
