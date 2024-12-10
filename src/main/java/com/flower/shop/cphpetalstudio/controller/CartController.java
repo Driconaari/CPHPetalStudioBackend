@@ -12,6 +12,11 @@ import java.util.List;
 @RequestMapping("/api/cart")
 public class CartController {
 
+    @GetMapping("/payment")
+    public String showPaymentPage() {
+        return "payment"; // This should correspond to payment.html in your templates directory
+    }
+
     @Autowired
     private CartService cartService;
 

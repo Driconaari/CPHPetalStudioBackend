@@ -1,20 +1,30 @@
 package com.flower.shop.cphpetalstudio.service;
 
-
+import com.flower.shop.cphpetalstudio.DTO.PaymentRequest;
+import com.flower.shop.cphpetalstudio.entity.Bouquet;
 import com.flower.shop.cphpetalstudio.entity.Subscription;
 import com.flower.shop.cphpetalstudio.entity.User;
 import com.flower.shop.cphpetalstudio.repository.SubscriptionRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Service
+@Transactional
 public class SubscriptionService {
 
+    private final SubscriptionRepository subscriptionRepository;
+    private final BouquetService bouquetService;
+
     @Autowired
-    private SubscriptionRepository subscriptionRepository;
+    public SubscriptionService(SubscriptionRepository subscriptionRepository, BouquetService bouquetService) {
+        this.subscriptionRepository = subscriptionRepository;
+        this.bouquetService = bouquetService;
+    }
 
     public List<Subscription> getAllSubscriptions() {
         return subscriptionRepository.findAll();
@@ -37,7 +47,18 @@ public class SubscriptionService {
         return subscriptionRepository.findByUserAndEndDateAfter(user, LocalDate.now());
     }
 
-    public Subscription createSubscription(Subscription subscription) {
+    public Subscription createSubscription(PaymentRequest paymentRequest) {
+        // Fetch the bouquet
+        Bouquet bouquet = bouquetService.getBouquetById(paymentRequest.getBouquetId());
+
+        // Map PaymentRequest to Subscription
+        Subscription subscription = new Subscription();
+        subscription.setBouquet(bouquet);
+        subscription.setUser(paymentRequest.getUser());
+        subscription.setFrequency(paymentRequest.getPaymentPlan());
+        subscription.setStartDate(LocalDateTime.now());
+        subscription.setStatus("ACTIVE");
+
         return subscriptionRepository.save(subscription);
     }
 

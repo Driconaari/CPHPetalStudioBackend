@@ -8,7 +8,6 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
-
 @Service
 @Transactional
 public class BouquetService {
@@ -48,6 +47,7 @@ public class BouquetService {
         bouquet.setPrice(bouquetDetails.getPrice());
         bouquet.setImageUrl(bouquetDetails.getImageUrl());
         bouquet.setFeatured(bouquetDetails.isFeatured());
+        bouquet.setStockQuantity(bouquetDetails.getStockQuantity()); // Update stock quantity
         return bouquetRepository.save(bouquet);
     }
 
@@ -65,6 +65,9 @@ public class BouquetService {
 
     public void updateBouquetStock(Long id, int quantity) {
         Bouquet bouquet = getBouquetById(id);
+        if (bouquet.getStockQuantity() + quantity < 0) {
+            throw new RuntimeException("Stock cannot be negative for bouquet: " + bouquet.getName());
+        }
         bouquet.setStockQuantity(bouquet.getStockQuantity() + quantity);
         bouquetRepository.save(bouquet);
     }

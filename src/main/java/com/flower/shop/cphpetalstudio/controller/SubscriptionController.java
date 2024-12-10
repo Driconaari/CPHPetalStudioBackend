@@ -1,5 +1,6 @@
 package com.flower.shop.cphpetalstudio.controller;
 
+import com.flower.shop.cphpetalstudio.DTO.PaymentRequest;
 import com.flower.shop.cphpetalstudio.entity.Subscription;
 import com.flower.shop.cphpetalstudio.entity.User;
 import com.flower.shop.cphpetalstudio.service.SubscriptionService;
@@ -41,10 +42,11 @@ public class SubscriptionController {
     }
 
     @PostMapping
-    public ResponseEntity<Subscription> createSubscription(@RequestBody Subscription subscription, Authentication authentication) {
+    public ResponseEntity<Subscription> createSubscription(@RequestBody PaymentRequest paymentRequest, Authentication authentication) {
         User user = userService.getUserByUsername(authentication.getName());
-        subscription.setUser(user);
-        return ResponseEntity.ok(subscriptionService.createSubscription(subscription));
+        paymentRequest.setUser(user); // Set the user in the PaymentRequest
+        Subscription subscription = subscriptionService.createSubscription(paymentRequest);
+        return ResponseEntity.ok(subscription);
     }
 
     @PutMapping("/{id}")

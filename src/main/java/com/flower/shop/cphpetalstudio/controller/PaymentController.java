@@ -14,11 +14,14 @@ import org.springframework.web.bind.annotation.RestController;
 @RequestMapping("/api/payment")
 public class PaymentController {
 
-    @Autowired
-    private SubscriptionService subscriptionService;
+    private final SubscriptionService subscriptionService;
+    private final OrderService orderService;
 
     @Autowired
-    private OrderService orderService;
+    public PaymentController(SubscriptionService subscriptionService, OrderService orderService) {
+        this.subscriptionService = subscriptionService;
+        this.orderService = orderService;
+    }
 
     @PostMapping("/checkout")
     public ResponseEntity<String> checkout(@RequestBody PaymentRequest paymentRequest) {

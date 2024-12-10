@@ -1,8 +1,10 @@
 package com.flower.shop.cphpetalstudio.service;
 
+import com.flower.shop.cphpetalstudio.DTO.PaymentRequest;
 import com.flower.shop.cphpetalstudio.entity.Bouquet;
 import com.flower.shop.cphpetalstudio.entity.Order;
 import com.flower.shop.cphpetalstudio.entity.User;
+
 import com.flower.shop.cphpetalstudio.repository.OrderRepository;
 import com.flower.shop.cphpetalstudio.exception.InsufficientStockException;
 import com.flower.shop.cphpetalstudio.exception.OrderNotFoundException;
@@ -41,6 +43,29 @@ public class OrderService {
         updateBouquetStock(bouquets);
 
         return orderRepository.save(order);
+    }
+
+    public void createOrder(PaymentRequest paymentRequest) {
+        // Fetch bouquet details using the bouquet service
+        Bouquet bouquet = bouquetService.getBouquetById(paymentRequest.getBouquetId());
+
+        // Check stock availability
+        if (bouquet.getStockQuantity() < paymentRequest.getQuantity()) {
+            throw new InsufficientStockException("Not enough stock for bouquet: " + bouquet.getName());
+        }
+
+        // Create a new order
+        Order order = new Order();
+        order.setBouquets(List.of(bouquet));
+        order.setTotal(calculateTotal(List.of(bouquet)) * paymentRequest.getQuantity());
+        order.setOrderDate(LocalDateTime.now());
+        order.setStatus("PLACED");
+
+        // Deduct the stock
+        bouquetService.updateBouquetStock(bouquet.getId(), -paymentRequest.getQuantity());
+
+        // Save the order
+        orderRepository.save(order);
     }
 
     private double calculateTotal(List<Bouquet> bouquets) {

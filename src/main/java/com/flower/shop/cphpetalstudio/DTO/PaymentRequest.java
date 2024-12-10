@@ -1,10 +1,14 @@
-package com.flower.shop.cphpetalstudio.DTO;
+package com.flower.shop.cphpetalstudio.DTO; // Adjust package if necessary
+
+
+import com.flower.shop.cphpetalstudio.entity.User;
 
 public class PaymentRequest {
     private Long bouquetId;
     private int quantity;
     private boolean subscription;
-    private String paymentPlan; // WEEKLY, MONTHLY, YEARLY (if subscription)
+    private String paymentPlan; // WEEKLY, MONTHLY, YEARLY
+    private User user; // Add this field for mapping user
 
     // Getters and Setters
     public Long getBouquetId() {
@@ -37,6 +41,14 @@ public class PaymentRequest {
 
     public void setPaymentPlan(String paymentPlan) {
         this.paymentPlan = paymentPlan;
+    }
+
+    public User getUser() {
+        return user;
+    }
+
+    public void setUser(User user) {
+        this.user = user;
     }
 }
 

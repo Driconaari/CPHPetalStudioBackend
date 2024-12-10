@@ -4,15 +4,14 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
-import jakarta.persistence.ManyToOne;
-import lombok.Data;
-import lombok.NoArgsConstructor;
 
-import java.time.LocalDate;
+import java.time.LocalDateTime;
+
+
+import jakarta.persistence.*;
+import java.time.LocalDateTime;
 
 @Entity
-@Data
-@NoArgsConstructor
 public class Subscription {
 
     @Id
@@ -20,14 +19,26 @@ public class Subscription {
     private Long id;
 
     @ManyToOne
+    @JoinColumn(name = "user_id")
     private User user;
 
     @ManyToOne
+    @JoinColumn(name = "bouquet_id")
     private Bouquet bouquet;
 
-    private LocalDate startDate;
-    private LocalDate endDate;
-    private String frequency;
+    private LocalDateTime startDate;
+    private LocalDateTime endDate;
+    private String frequency; // WEEKLY, MONTHLY, YEARLY
+    private String status; // ACTIVE, PAUSED, CANCELED
+
+    // Getters and Setters
+    public Long getId() {
+        return id;
+    }
+
+    public void setId(Long id) {
+        this.id = id;
+    }
 
     public User getUser() {
         return user;
@@ -45,19 +56,19 @@ public class Subscription {
         this.bouquet = bouquet;
     }
 
-    public LocalDate getStartDate() {
+    public LocalDateTime getStartDate() {
         return startDate;
     }
 
-    public void setStartDate(LocalDate startDate) {
+    public void setStartDate(LocalDateTime startDate) {
         this.startDate = startDate;
     }
 
-    public LocalDate getEndDate() {
+    public LocalDateTime getEndDate() {
         return endDate;
     }
 
-    public void setEndDate(LocalDate endDate) {
+    public void setEndDate(LocalDateTime endDate) {
         this.endDate = endDate;
     }
 
@@ -68,4 +79,23 @@ public class Subscription {
     public void setFrequency(String frequency) {
         this.frequency = frequency;
     }
+
+    public String getStatus() {
+        return status;
+    }
+
+    public void setStatus(String status) {
+        this.status = status;
+    }
+
+    public void setBouquetId(Long bouquetId) {
+    }
+
+    public void setQuantity(int quantity) {
+    }
+
+    public void setSubscriptionType(String paymentPlan) {
+    }
 }
+
+
