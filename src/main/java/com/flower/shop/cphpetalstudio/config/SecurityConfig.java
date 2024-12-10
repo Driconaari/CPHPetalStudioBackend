@@ -39,6 +39,7 @@ public class SecurityConfig {
                         // Public Endpoints
                         .requestMatchers("/api/auth/**", "/", "/register", "/login", "/css/**", "/js/**").permitAll()
                         .requestMatchers("/shop/**", "/api/bouquets/**").permitAll()
+                        .requestMatchers("/api/cart/**").authenticated()
 
                         // Admin-Only Endpoints
                         .requestMatchers("/admin/**", "/api/admin/**").hasAuthority("ROLE_ADMIN")
