@@ -24,7 +24,6 @@ public class CartController {
         this.cartService = cartService;
     }
 
-    @PreAuthorize("hasRole('USER')")
     @PostMapping("/add")
     public ResponseEntity<ApiResponse> addBouquetToCart(@RequestBody AddToCartRequest request, Authentication authentication) {
         try {

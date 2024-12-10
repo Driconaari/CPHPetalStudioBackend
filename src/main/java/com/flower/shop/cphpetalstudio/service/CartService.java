@@ -30,7 +30,6 @@ public class CartService {
         this.bouquetRepository = bouquetRepository;
     }
 
-    // Method to add bouquet to cart
     public CartItem addBouquetToCart(String username, Long bouquetId, int quantity) {
         // Fetch the user by username
         User user = userRepository.findByUsername(username)
@@ -50,78 +49,23 @@ public class CartService {
             return cartItemRepository.save(item);
         } else {
             // Otherwise, create a new CartItem
-            Cart cart = user.getCart(); // Assuming User has a getCart() method
-            CartItem cartItem = new CartItem(cart, bouquet, quantity);
+
+            // Check if the user has a Cart; if not, create one
+            Cart cart = user.getCart();  // This assumes the User already has a Cart associated
+            if (cart == null) {
+                cart = new Cart(); // Create a new Cart if the user doesn't have one
+                cart.setUser(user); // Link the Cart to the User
+                cart = cartIRepository.save(cart); // Save the newly created Cart to the database
+            }
+
+            // Create a new CartItem
+            CartItem cartItem = new CartItem();
+            cartItem.setCart(cart);  // Set the newly created or fetched Cart
+            cartItem.setBouquet(bouquet);
+            cartItem.setQuantity(quantity);
+
+            // Save the CartItem to the repository
             return cartItemRepository.save(cartItem);
         }
-    }
-
-    // Method to remove bouquet from cart
-    public void removeBouquetFromCart(String username, Long cartItemId) {
-        // Fetch the user by username
-        User user = userRepository.findByUsername(username)
-                .orElseThrow(() -> new RuntimeException("User not found"));
-
-        // Fetch the cart item by cartItemId
-        CartItem cartItem = cartItemRepository.findById(cartItemId)
-                .orElseThrow(() -> new RuntimeException("Cart item not found"));
-
-        // Ensure the user is authorized to remove the cart item
-        if (!cartItem.getCart().getUser().equals(user)) {
-            throw new RuntimeException("Unauthorized access to cart item");
-        }
-
-        // Delete the cart item
-        cartItemRepository.delete(cartItem);
-    }
-
-    // Method to get cart items for a user
-    public List<CartItem> getCartForUser(String username) {
-        // Fetch the user by username
-        User user = userRepository.findByUsername(username)
-                .orElseThrow(() -> new RuntimeException("User not found"));
-
-        // Fetch and return the cart items for the user
-        return cartItemRepository.findByCart_User(user);
-    }
-
-    // Method to update the quantity of a cart item
-    public CartItem updateCartItem(String username, Long cartItemId, int newQuantity) {
-        // Fetch the user by username
-        User user = userRepository.findByUsername(username)
-                .orElseThrow(() -> new RuntimeException("User not found"));
-
-        // Fetch the cart item by cartItemId
-        CartItem cartItem = cartItemRepository.findById(cartItemId)
-                .orElseThrow(() -> new RuntimeException("Cart item not found"));
-
-        // Ensure the user is authorized to update the cart item
-        if (!cartItem.getCart().getUser().equals(user)) {
-            throw new RuntimeException("Unauthorized access to cart item");
-        }
-
-        // Update the quantity of the cart item
-        cartItem.setQuantity(newQuantity);
-        return cartItemRepository.save(cartItem);
-    }
-
-    // Method to clear a user's cart
-    public void clearCart(String username) {
-        // Fetch the user by username
-        User user = userRepository.findByUsername(username)
-                .orElseThrow(() -> new RuntimeException("User not found"));
-
-        // Delete all cart items associated with the user
-        cartItemRepository.deleteByCart_User(user);
-    }
-
-    // Method to get the count of cart items for a user
-    public int getCartItemCount(String username) {
-        // Fetch the user by username
-        User user = userRepository.findByUsername(username)
-                .orElseThrow(() -> new RuntimeException("User not found"));
-
-        // Return the count of cart items for the user
-        return (int) cartItemRepository.countByCart_User(user);
     }
 }
