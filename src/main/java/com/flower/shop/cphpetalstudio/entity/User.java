@@ -53,4 +53,9 @@ public class User {
                 .map(String::trim)
                 .collect(Collectors.toSet());
     }
+
+    public void setName(String testUser) {
+
+    }
+
 }

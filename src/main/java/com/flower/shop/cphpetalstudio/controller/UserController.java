@@ -5,6 +5,7 @@ import com.flower.shop.cphpetalstudio.entity.User;
 import com.flower.shop.cphpetalstudio.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -36,26 +37,21 @@ public class UserController {
     }
 
     // Get user profile details (username, email) based on the currently authenticated user
-    public ResponseEntity<UserProfile> getUserProfile(Principal principal) {
-        User user = userService.findByUsername(principal.getName());
-        if (user == null) {
-            return ResponseEntity.notFound().build();
-        }
-
-        return ResponseEntity.ok(new UserProfile(user.getUsername(), user.getEmail()));
-    }
-
-
-    /*@GetMapping("/profile")
+    @GetMapping("/profile")
+    @PreAuthorize("hasRole('ROLE_USER')")
     public ResponseEntity<User> getProfile(@AuthenticationPrincipal UserDetails userDetails) {
         User user = userService.findByUsername(userDetails.getUsername());
+
         if (user == null) {
             return ResponseEntity.notFound().build();
         }
+
         return ResponseEntity.ok(user);
     }
 
-     */
+
+
+
 
     @PutMapping("/edit")
     public ResponseEntity<?> updateProfile(@RequestBody User updatedUser, @AuthenticationPrincipal UserDetails userDetails) {

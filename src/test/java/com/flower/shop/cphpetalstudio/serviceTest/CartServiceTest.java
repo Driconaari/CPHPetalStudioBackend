@@ -180,4 +180,24 @@ class CartServiceTest {
 
         assertEquals(3, itemCount);
     }
+
+
+    @Test
+    void testUserCartAssociation() {
+        // Create and persist a user
+        User user = new User();
+        user.setName("Test User");
+        user = userRepository.save(user);
+
+        // Create and persist a cart associated with the user
+        Cart cart = new Cart();
+        cart.setUser(user);
+        cart = cartRepository.save(cart);
+
+        // Verify the association
+        assertNotNull(cart.getId());
+        assertEquals(user.getId(), cart.getUser().getId());
+    }
+
 }
+

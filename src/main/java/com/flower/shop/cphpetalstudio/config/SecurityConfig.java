@@ -38,11 +38,9 @@ public class SecurityConfig {
                 .authorizeHttpRequests(authz -> authz
                         // Public Endpoints
                         .requestMatchers("/api/auth/**", "/", "/register", "/login", "/css/**", "/js/**").permitAll()
-                        .requestMatchers("/shop/**", "/api/bouquets/**").permitAll()
+                        .requestMatchers("/shop/**", "/api/bouquets/**", "/api/cart/count").permitAll()
                         .requestMatchers("/api/cart/**").authenticated()
                         .requestMatchers("/api/user/profile").authenticated() // Ensure this is accessible for authenticated users
-
-
 
                         // Admin-Only Endpoints
                         .requestMatchers("/admin/**", "/api/admin/**").hasAuthority("ROLE_ADMIN")
