@@ -36,20 +36,29 @@ public class SecurityConfig {
                     corsConfiguration.setAllowCredentials(true);
                     return corsConfiguration;
                 }))
-                .csrf(csrf -> csrf.disable())
+                .csrf(csrf -> csrf.disable()) // Disable CSRF protection for APIs
                 .authorizeHttpRequests(authz -> authz
+                        // Public Endpoints
                         .requestMatchers("/api/auth/**", "/", "/register", "/login").permitAll()
-                        .requestMatchers("/bouquets", "/bouquets/{id}").permitAll()
+                        .requestMatchers("/bouquets", "/bouquets/{id}", "/api/bouquets").permitAll()
+
+                        // Admin-Only Endpoints
                         .requestMatchers("/bouquets/create", "/bouquets/{id}/edit", "/bouquets/{id}/delete").hasAuthority("ROLE_ADMIN")
-                        .requestMatchers("/dashboard").authenticated()
                         .requestMatchers("/api/admin/**", "/admin/**").hasAuthority("ROLE_ADMIN")
+
+                        // Authenticated-Only Endpoints
+                        .requestMatchers("/dashboard").authenticated()
+
+                        // Catch-All for All Other Requests
                         .anyRequest().authenticated()
                 )
-                .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-                .addFilterBefore(jwtRequestFilter, UsernamePasswordAuthenticationFilter.class);
+                .sessionManagement(session ->
+                        session.sessionCreationPolicy(SessionCreationPolicy.STATELESS)) // Stateless session for JWT-based authentication
+                .addFilterBefore(jwtRequestFilter, UsernamePasswordAuthenticationFilter.class); // Add JWT filter before username/password filter
 
         return http.build();
     }
+
 
 
     @Bean
