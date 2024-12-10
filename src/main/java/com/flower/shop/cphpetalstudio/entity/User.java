@@ -1,53 +1,55 @@
 package com.flower.shop.cphpetalstudio.entity;
 
-import jakarta.persistence.*;
-import lombok.*;
-
-import java.time.LocalDateTime;
-import java.util.Arrays;
-import java.util.Set;
-import java.util.stream.Collectors;
+import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 
 @Entity
-@Table(name = "users")
-@Getter
-@Setter
+@Data
 @NoArgsConstructor
-@AllArgsConstructor
-@ToString
 public class User {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(nullable = false, unique = true)
     private String username;
-
-    @Column(nullable = false)
     private String password;
-
-    @Column(nullable = false, unique = true)
     private String email;
-
-    /**
-     * Comma-separated roles, e.g., "ROLE_USER,ROLE_ADMIN".
-     */
-    @Column(nullable = false)
     private String role;
 
-    @Column(name = "created_at")
-    private LocalDateTime createdAt = LocalDateTime.now(); // Default value
+    public String getUsername() {
+        return username;
+    }
 
-    @Column(name = "is_company", nullable = false)
-    private boolean isCompany = false; // Default value
+    public void setUsername(String username) {
+        this.username = username;
+    }
 
-    /**
-     * Splits the `role` field and returns a set of roles.
-     */
-    public Set<String> getRoles() {
-        return Arrays.stream(role.split(","))
-                .map(String::trim)
-                .collect(Collectors.toSet());
+    public String getPassword() {
+        return password;
+    }
+
+    public void setPassword(String password) {
+        this.password = password;
+    }
+
+    public String getEmail() {
+        return email;
+    }
+
+    public void setEmail(String email) {
+        this.email = email;
+    }
+
+    public String getRole() {
+        return role;
+    }
+
+    public void setRole(String role) {
+        this.role = role;
     }
 }

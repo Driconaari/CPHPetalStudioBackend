@@ -17,8 +17,10 @@ public class CartController {
 
     @PreAuthorize("hasRole('USER')")
     @PostMapping("/add")
-    public void addBouquetToCart(@RequestBody CartItem cartItem) {
+    public String addBouquetToCart(@RequestBody CartItem cartItem) {
         cartService.addBouquetToCart(cartItem);
+        // Redirect to the payment page after adding to cart
+        return "/payment";
     }
 
     @PreAuthorize("hasRole('USER')")
@@ -32,7 +34,4 @@ public class CartController {
     public List<CartItem> getCart() {
         return cartService.getCartForUser();
     }
-
-
-
 }

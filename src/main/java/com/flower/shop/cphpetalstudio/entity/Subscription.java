@@ -1,13 +1,20 @@
 package com.flower.shop.cphpetalstudio.entity;
 
-import jakarta.persistence.*;
+import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.ManyToOne;
 import lombok.Data;
+import lombok.NoArgsConstructor;
+
 import java.time.LocalDate;
 
-@Data
 @Entity
-@Table(name = "subscriptions")
+@Data
+@NoArgsConstructor
 public class Subscription {
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -20,18 +27,45 @@ public class Subscription {
 
     private LocalDate startDate;
     private LocalDate endDate;
-    private String frequency; // e.g., "WEEKLY", "MONTHLY"
+    private String frequency;
 
-    // Explicit getters (if Lombok is not working correctly)
+    public User getUser() {
+        return user;
+    }
+
+    public void setUser(User user) {
+        this.user = user;
+    }
+
+    public Bouquet getBouquet() {
+        return bouquet;
+    }
+
+    public void setBouquet(Bouquet bouquet) {
+        this.bouquet = bouquet;
+    }
+
     public LocalDate getStartDate() {
         return startDate;
+    }
+
+    public void setStartDate(LocalDate startDate) {
+        this.startDate = startDate;
     }
 
     public LocalDate getEndDate() {
         return endDate;
     }
 
+    public void setEndDate(LocalDate endDate) {
+        this.endDate = endDate;
+    }
+
     public String getFrequency() {
         return frequency;
+    }
+
+    public void setFrequency(String frequency) {
+        this.frequency = frequency;
     }
 }
