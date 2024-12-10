@@ -39,14 +39,12 @@ public class SecurityConfig {
                         // Public Endpoints
                         .requestMatchers("/api/auth/**", "/", "/register", "/login", "/css/**", "/js/**").permitAll()
                         .requestMatchers("/shop/**", "/api/bouquets/**", "/api/cart/count").permitAll()
-                        .requestMatchers("/api/cart/**").authenticated()
-                        .requestMatchers("/api/user/profile").authenticated() // Ensure this is accessible for authenticated users
+
+                        // Authenticated Endpoints
+                        .requestMatchers("/api/cart/**", "/api/user/profile", "/dashboard").authenticated()
 
                         // Admin-Only Endpoints
                         .requestMatchers("/admin/**", "/api/admin/**").hasAuthority("ROLE_ADMIN")
-
-                        // Authenticated-Only Endpoints
-                        .requestMatchers("/dashboard", "/api/cart/**").authenticated()
 
                         // Catch-All for All Other Requests
                         .anyRequest().authenticated()
