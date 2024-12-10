@@ -29,7 +29,6 @@ public class BouquetService {
                 .orElseThrow(() -> new RuntimeException("Bouquet not found with id: " + id));
     }
 
-
     public List<Bouquet> getFeaturedBouquets() {
         return bouquetRepository.findTop5ByFeaturedTrueOrderByCreatedAtDesc();
     }
@@ -49,6 +48,8 @@ public class BouquetService {
         bouquet.setPrice(bouquetDetails.getPrice());
         bouquet.setImageUrl(bouquetDetails.getImageUrl());
         bouquet.setFeatured(bouquetDetails.isFeatured());
+        bouquet.setCategory(bouquetDetails.getCategory());
+        bouquet.setStockQuantity(bouquetDetails.getStockQuantity());
         return bouquetRepository.save(bouquet);
     }
 
@@ -70,8 +71,6 @@ public class BouquetService {
         bouquetRepository.save(bouquet);
     }
 
-    // New methods
-
     public List<Bouquet> getBouquetsByIds(List<Long> bouquetIds) {
         return bouquetRepository.findAllById(bouquetIds);
     }
@@ -84,8 +83,15 @@ public class BouquetService {
         return bouquetRepository.findByPriceGreaterThan(minPrice);
     }
 
-
-    public List<Bouquet> findAllBouquets() {
-        return bouquetRepository.findAll(); // Make sure this returns the bouquets correctly
+    public List<Bouquet> getBouquets(BigDecimal maxPrice, BigDecimal minPrice, String category) {
+        if (maxPrice != null) {
+            return getBouquetsUnderPrice(maxPrice);
+        } else if (minPrice != null) {
+            return getBouquetsOverPrice(minPrice);
+        } else if (category != null && !category.isEmpty()) {
+            return getBouquetsByCategory(category);
+        } else {
+            return getAllBouquets();
+        }
     }
 }

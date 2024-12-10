@@ -1,7 +1,6 @@
 package com.flower.shop.cphpetalstudio.controller;
 
 import com.flower.shop.cphpetalstudio.dto.AddToCartRequest;
-import com.flower.shop.cphpetalstudio.dto.ApiError;
 import com.flower.shop.cphpetalstudio.dto.ApiResponse;
 import com.flower.shop.cphpetalstudio.dto.UpdateCartItemRequest;
 import com.flower.shop.cphpetalstudio.entity.CartItem;
@@ -27,25 +26,25 @@ public class CartController {
 
     @PreAuthorize("hasRole('USER')")
     @PostMapping("/add")
-    public ResponseEntity<?> addBouquetToCart(@RequestBody AddToCartRequest request, Authentication authentication) {
+    public ResponseEntity<ApiResponse> addBouquetToCart(@RequestBody AddToCartRequest request, Authentication authentication) {
         try {
             String username = authentication.getName();
             CartItem addedItem = cartService.addBouquetToCart(username, request.getBouquetId(), request.getQuantity());
-            return ResponseEntity.ok(addedItem);
+            return ResponseEntity.ok(new ApiResponse("Item added to cart successfully", true));
         } catch (Exception e) {
-            return ResponseEntity.badRequest().body(new ApiError("Failed to add bouquet to cart", e.getMessage()));
+            return ResponseEntity.badRequest().body(new ApiResponse("Failed to add bouquet to cart: " + e.getMessage(), false));
         }
     }
 
     @PreAuthorize("hasRole('USER')")
     @DeleteMapping("/remove/{id}")
-    public ResponseEntity<?> removeBouquetFromCart(@PathVariable Long id, Authentication authentication) {
+    public ResponseEntity<ApiResponse> removeBouquetFromCart(@PathVariable Long id, Authentication authentication) {
         try {
             String username = authentication.getName();
             cartService.removeBouquetFromCart(username, id);
-            return ResponseEntity.ok(new ApiResponse("Item removed from cart successfully"));
+            return ResponseEntity.ok(new ApiResponse("Item removed from cart successfully", true));
         } catch (Exception e) {
-            return ResponseEntity.badRequest().body(new ApiError("Failed to remove bouquet from cart", e.getMessage()));
+            return ResponseEntity.badRequest().body(new ApiResponse("Failed to remove bouquet from cart: " + e.getMessage(), false));
         }
     }
 
@@ -57,31 +56,39 @@ public class CartController {
             List<CartItem> cartItems = cartService.getCartForUser(username);
             return ResponseEntity.ok(cartItems);
         } catch (Exception e) {
-            return ResponseEntity.badRequest().body(new ApiError("Failed to retrieve cart", e.getMessage()));
+            return ResponseEntity.badRequest().body(new ApiResponse("Failed to retrieve cart: " + e.getMessage(), false));
         }
     }
 
     @PreAuthorize("hasRole('USER')")
     @PutMapping("/update/{id}")
-    public ResponseEntity<?> updateCartItem(@PathVariable Long id, @RequestBody UpdateCartItemRequest request, Authentication authentication) {
+    public ResponseEntity<ApiResponse> updateCartItem(@PathVariable Long id, @RequestBody UpdateCartItemRequest request, Authentication authentication) {
         try {
             String username = authentication.getName();
             CartItem updatedItem = cartService.updateCartItem(username, id, request.getQuantity());
-            return ResponseEntity.ok(updatedItem);
+            return ResponseEntity.ok(new ApiResponse("Cart item updated successfully", true));
         } catch (Exception e) {
-            return ResponseEntity.badRequest().body(new ApiError("Failed to update cart item", e.getMessage()));
+            return ResponseEntity.badRequest().body(new ApiResponse("Failed to update cart item: " + e.getMessage(), false));
         }
     }
 
     @PreAuthorize("hasRole('USER')")
     @DeleteMapping("/clear")
-    public ResponseEntity<?> clearCart(Authentication authentication) {
+    public ResponseEntity<ApiResponse> clearCart(Authentication authentication) {
         try {
             String username = authentication.getName();
             cartService.clearCart(username);
-            return ResponseEntity.ok(new ApiResponse("Cart cleared successfully"));
+            return ResponseEntity.ok(new ApiResponse("Cart cleared successfully", true));
         } catch (Exception e) {
-            return ResponseEntity.badRequest().body(new ApiError("Failed to clear cart", e.getMessage()));
+            return ResponseEntity.badRequest().body(new ApiResponse("Failed to clear cart: " + e.getMessage(), false));
         }
+    }
+
+    @PreAuthorize("hasRole('USER')")
+    @GetMapping("/count")
+    public ResponseEntity<Integer> getCartCount(Authentication authentication) {
+        String username = authentication.getName();
+        int count = cartService.getCartItemCount(username);
+        return ResponseEntity.ok(count);
     }
 }

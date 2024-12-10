@@ -26,4 +26,6 @@ public interface CartItemRepository extends JpaRepository<CartItem, Long> {
 
     // Corrected method to reference bouquet's id using '_Id'
     Optional<CartItem> findByUserAndBouquet_Id(User user, Long bouquetId);
+
+
 }
