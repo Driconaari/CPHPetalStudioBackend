@@ -1,5 +1,6 @@
 package com.flower.shop.cphpetalstudio.config;
 
+import com.flower.shop.cphpetalstudio.LoggingFilter;
 import com.flower.shop.cphpetalstudio.security.JwtRequestFilter;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -54,6 +55,7 @@ public class SecurityConfig {
                 )
                 .sessionManagement(session ->
                         session.sessionCreationPolicy(SessionCreationPolicy.STATELESS)) // Stateless session for JWT-based authentication
+                .addFilterBefore(new LoggingFilter(), UsernamePasswordAuthenticationFilter.class) // Add LoggingFilter
                 .addFilterBefore(jwtRequestFilter, UsernamePasswordAuthenticationFilter.class); // Add JWT filter before username/password filter
 
         return http.build();
