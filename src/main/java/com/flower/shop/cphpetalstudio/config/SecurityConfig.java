@@ -67,7 +67,6 @@ public class SecurityConfig {
         source.registerCorsConfiguration("/api/**", configuration);
         source.registerCorsConfiguration("/fonts/**", configuration);
         source.registerCorsConfiguration("/assets/webfonts/**", configuration);
-        configuration.setAllowCredentials(true);
         return source;
     }
 
