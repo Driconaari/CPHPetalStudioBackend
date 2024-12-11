@@ -83,27 +83,6 @@ public class ShopController {
         return bouquetService.getBouquetById(id);
     }
 
-    @PostMapping("/cart/add")
-    public CartItem addToCart(@RequestBody AddToCartRequest request, Authentication authentication) {
-        logger.info("Adding bouquet to cart - bouquetId: {}, quantity: {}", request.getBouquetId(), request.getQuantity());
-        User user = userService.findByUsername(authentication.getName());
-        Bouquet bouquet = bouquetService.getBouquetById(request.getBouquetId());
-        return cartService.addToCart(user, bouquet, request.getQuantity());
-    }
-
-    @GetMapping("/cart")
-    public List<CartItem> viewCart(Authentication authentication) {
-        logger.info("Viewing cart for user: {}", authentication.getName());
-        User user = userService.findByUsername(authentication.getName());
-        return cartService.getCartByUser(user);
-    }
-
-    @PostMapping("/cart/remove")
-    public CartItem removeFromCart(@RequestBody RemoveFromCartRequest request, Authentication authentication) {
-        logger.info("Removing bouquet from cart - bouquetId: {}", request.getBouquetId());
-        User user = userService.findByUsername(authentication.getName());
-        return cartService.removeFromCart(user, request.getBouquetId());
-    }
 
     @PostMapping("/order")
     public Order createOrder(Authentication authentication) {
@@ -124,24 +103,4 @@ public class ShopController {
         return order;
     }
 
-    @PostMapping("/cart/add/{bouquetId}")
-    public ResponseEntity<?> addToCart(@PathVariable Long bouquetId, @RequestBody CartItem cartItem) {
-        logger.info("Adding bouquet to cart - bouquetId: {}", bouquetId);
-        cartService.addToCart(cartItem);
-        return ResponseEntity.ok(new ResponseMessage("Item added to cart", true));
-    }
-
-    @PostMapping("/cart/remove/{itemId}")
-    public ResponseEntity<?> removeFromCart(@PathVariable Long itemId) {
-        logger.info("Removing item from cart - itemId: {}", itemId);
-        cartService.removeFromCart(itemId);
-        return ResponseEntity.ok(new ResponseMessage("Item removed from cart", true));
-    }
-
-    @GetMapping("/cart/count")
-    public ResponseEntity<Integer> getCartCount() {
-        logger.info("Fetching cart count");
-        int count = cartService.getCartCount();
-        return ResponseEntity.ok(count);
-    }
 }

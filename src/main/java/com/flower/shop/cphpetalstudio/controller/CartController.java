@@ -1,9 +1,6 @@
 package com.flower.shop.cphpetalstudio.controller;
 
-import com.flower.shop.cphpetalstudio.dto.AddToCartRequest;
-import com.flower.shop.cphpetalstudio.dto.ApiError;
-import com.flower.shop.cphpetalstudio.dto.ApiResponse;
-import com.flower.shop.cphpetalstudio.dto.UpdateCartItemRequest;
+import com.flower.shop.cphpetalstudio.dto.*;
 import com.flower.shop.cphpetalstudio.entity.Bouquet;
 import com.flower.shop.cphpetalstudio.entity.CartItem;
 import com.flower.shop.cphpetalstudio.entity.User;
@@ -22,6 +19,7 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/api/cart")
+@CrossOrigin (origins = "http://localhost:5500")
 public class CartController {
 
     private static final Logger logger = LoggerFactory.getLogger(CartController.class);
@@ -41,27 +39,20 @@ public class CartController {
     @PostMapping("/add")
     public ResponseEntity<?> addBouquetToCart(@RequestBody AddToCartRequest request, Authentication authentication) {
         try {
-            // Get the username from the authentication object
             String username = authentication.getName();
             logger.info("Adding bouquet to cart for user: {}", username);
 
-            // Find the user from the username
             User user = userService.findByUsername(username);
-
-            // Get the bouquet by its ID
             Bouquet bouquet = bouquetService.getBouquetById(request.getBouquetId());
 
-            // Add the bouquet to the user's cart
             CartItem addedItem = cartService.addBouquetToCart(user.getUsername(), bouquet.getId(), request.getQuantity());
             logger.info("Bouquet added to cart: {}", addedItem);
             return ResponseEntity.ok(addedItem);
-
         } catch (Exception e) {
             logger.error("Failed to add bouquet to cart", e);
             return ResponseEntity.badRequest().body(new ApiError("Failed to add bouquet to cart", e.getMessage()));
         }
     }
-
 
     @PreAuthorize("hasRole('USER')")
     @DeleteMapping("/remove/{id}")
