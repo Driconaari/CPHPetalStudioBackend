@@ -29,20 +29,20 @@ public class CartController {
         this.cartService = cartService;
     }
 
-    @PreAuthorize("hasRole('USER')")
-    @PostMapping("/add")
-    public ResponseEntity<?> addBouquetToCart(@RequestBody AddToCartRequest request, Authentication authentication) {
-        try {
-            String username = authentication.getName();
-            logger.info("Adding bouquet to cart for user: {}", username);
-            CartItem addedItem = cartService.addBouquetToCart(username, request.getBouquetId(), request.getQuantity());
-            logger.info("Bouquet added to cart: {}", addedItem);
-            return ResponseEntity.ok(addedItem);
-        } catch (Exception e) {
-            logger.error("Failed to add bouquet to cart", e);
-            return ResponseEntity.badRequest().body(new ApiError("Failed to add bouquet to cart", e.getMessage()));
-        }
+@PreAuthorize("hasRole('USER')")
+@PostMapping("/add")
+public ResponseEntity<?> addBouquetToCart(@RequestBody AddToCartRequest request, Authentication authentication) {
+    try {
+        String username = authentication.getName();
+        logger.info("Adding bouquet to cart for user: {}", username);
+        CartItem addedItem = cartService.addBouquetToCart(username, request.getBouquetId(), request.getQuantity());
+        logger.info("Bouquet added to cart: {}", addedItem);
+        return ResponseEntity.ok(addedItem);
+    } catch (Exception e) {
+        logger.error("Failed to add bouquet to cart", e);
+        return ResponseEntity.badRequest().body(new ApiError("Failed to add bouquet to cart", e.getMessage()));
     }
+}
 
     @PreAuthorize("hasRole('USER')")
     @DeleteMapping("/remove/{id}")
