@@ -25,19 +25,20 @@ public class CartService {
         this.cartItemRepository = cartItemRepository;
     }
 
-public CartItem addToCart(User user, Bouquet bouquet, int quantity) {
-    logger.info("Adding to cart: User={}, Bouquet={}, Quantity={}", user.getUsername(), bouquet.getId(), quantity);
-    Optional<CartItem> existingItem = cartItemRepository.findByUserAndBouquet(user, bouquet);
 
-    if (existingItem.isPresent()) {
-        CartItem cartItem = existingItem.get();
-        cartItem.setQuantity(cartItem.getQuantity() + quantity);  // Update quantity
-        return cartItemRepository.save(cartItem);
-    } else {
-        CartItem newCartItem = new CartItem(user, bouquet, quantity, user.getId());  // Set cartId to user's ID or another appropriate value
-        return cartItemRepository.save(newCartItem);
+    public CartItem addToCart(User user, Bouquet bouquet, int quantity) {
+        logger.info("Adding to cart: User={}, Bouquet={}, Quantity={}", user.getUsername(), bouquet.getId(), quantity);
+        Optional<CartItem> existingItem = cartItemRepository.findByUserAndBouquet(user, bouquet);
+
+        if (existingItem.isPresent()) {
+            CartItem cartItem = existingItem.get();
+            cartItem.setQuantity(cartItem.getQuantity() + quantity);  // Update quantity
+            return cartItemRepository.save(cartItem);
+        } else {
+            CartItem newCartItem = new CartItem(user, bouquet, quantity, user.getId());  // Set cartId to user's ID or another appropriate value
+            return cartItemRepository.save(newCartItem);
+        }
     }
-}
 
     public List<CartItem> getCartByUser(User user) {
         return cartItemRepository.findByUser(user);
