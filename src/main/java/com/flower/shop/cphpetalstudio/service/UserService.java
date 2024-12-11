@@ -71,5 +71,10 @@ public class UserService {
         userRepository.save(user);
     }
 
+    public User findById(long userId) {
+        return userRepository.findById(userId)
+                .orElseThrow(() -> new RuntimeException("User not found with ID: " + userId));
+    }
+
     // Other methods...
 }

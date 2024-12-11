@@ -30,19 +30,21 @@ public class CartItem {
     @Column(name = "created_at", nullable = false, updatable = false)
     private LocalDateTime createdAt;
 
+    @Column(name = "cart_id", nullable = false)
+    private Long cartId;
+
     @PrePersist
     private void onCreate() {
         createdAt = LocalDateTime.now();
     }
 
-    // Additional constructor for convenient initialization
-    public CartItem(User user, Bouquet bouquet, int quantity) {
+    public CartItem(User user, Bouquet bouquet, int quantity, Long cartId) {
         this.user = user;
         this.bouquet = bouquet;
         this.quantity = quantity;
+        this.cartId = cartId;
     }
 
-    // Method to get the bouquet ID from the associated bouquet
     public Long getBouquetId() {
         return bouquet != null ? bouquet.getId() : null;
     }

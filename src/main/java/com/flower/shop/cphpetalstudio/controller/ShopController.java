@@ -25,7 +25,7 @@ import org.springframework.web.bind.annotation.*;
 import java.math.BigDecimal;
 import java.util.List;
 import java.util.Optional;
-
+/*
 @Controller
 @RequestMapping("/shop")
 public class ShopController {
@@ -152,3 +152,5 @@ public class ShopController {
         return ResponseEntity.ok(count);
     }
 }
+
+ */
