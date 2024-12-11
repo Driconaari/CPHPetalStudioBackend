@@ -109,26 +109,30 @@ class ShopController {
         return order;
     }
 
-   @PostMapping("/add")
-public ResponseEntity<CartItem> addToCart(@RequestBody AddToCartRequest request, Authentication authentication) {
-    User user = userService.findByUsername(authentication.getName());
-    Bouquet bouquet = bouquetService.getBouquetById(request.getBouquetId());
+    @PostMapping("/add")
+    public ResponseEntity<CartItem> addToCart(@RequestBody AddToCartRequest request, Authentication authentication) {
+        User user = userService.findByUsername(authentication.getName());
+        Bouquet bouquet = bouquetService.getBouquetById(request.getBouquetId());
 
-    if (bouquet == null) {
-        return ResponseEntity.badRequest().body(null); // Return a bad request if bouquet is not found
-    }
+        if (bouquet == null) {
+            return ResponseEntity.badRequest().body(null); // Return a bad request if bouquet is not found
+        }
 
-    Optional<CartItem> existingItem = cartItemRepository.findByUserAndBouquet(user, bouquet);
-    CartItem item;
-    if (existingItem.isPresent()) {
-        item = existingItem.get();
-        item.setQuantity(item.getQuantity() + request.getQuantity());
-    } else {
-        item = new CartItem(user, bouquet, request.getQuantity(), user.getId()); // Set cartId to user's ID or another appropriate value
+        Optional<CartItem> existingItem = cartItemRepository.findByUserAndBouquet(user, bouquet);
+        CartItem item;
+        if (existingItem.isPresent()) {
+            item = existingItem.get();
+            item.setQuantity(item.getQuantity() + request.getQuantity());
+        } else {
+            item = new CartItem();
+            item.setUser(user);
+            item.setBouquet(bouquet);
+            item.setQuantity(request.getQuantity());
+            item.setCart(user.getCart());
+        }
+        cartItemRepository.save(item);
+        return ResponseEntity.ok(item); // Return the added/updated cart item
     }
-    cartItemRepository.save(item);
-    return ResponseEntity.ok(item); // Return the added/updated cart item
-}
 
     @PostMapping("/remove")
     @ResponseBody
@@ -166,4 +170,3 @@ public ResponseEntity<CartItem> addToCart(@RequestBody AddToCartRequest request,
         return ResponseEntity.ok(count);
     }
 }
-

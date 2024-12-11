@@ -30,27 +30,23 @@ public class User {
     @Column(nullable = false, unique = true)
     private String email;
 
-    /**
-     * Comma-separated roles, e.g., "ROLE_USER,ROLE_ADMIN".
-     */
+    @OneToOne(mappedBy = "user", cascade = CascadeType.ALL, fetch = FetchType.LAZY, optional = false)
+    private Cart cart;
+
     @Column(nullable = false)
     private String role;
 
     @Column(name = "created_at")
-    private LocalDateTime createdAt = LocalDateTime.now(); // Default value
+    private LocalDateTime createdAt = LocalDateTime.now();
 
     @Column(name = "is_company", nullable = false)
-    private boolean isCompany = false; // Default value
+    private boolean isCompany = false;
 
-    /**
-     * Splits the `role` field and returns a set of roles.
-     */
     public Set<String> getRoles() {
         return Arrays.stream(role.split(","))
                 .map(String::trim)
                 .collect(Collectors.toSet());
     }
-
 
     public boolean isCompany() {
         return isCompany;
@@ -60,5 +56,7 @@ public class User {
         isCompany = company;
     }
 
-
+    public Cart getCart() {
+        return this.cart;
+    }
 }

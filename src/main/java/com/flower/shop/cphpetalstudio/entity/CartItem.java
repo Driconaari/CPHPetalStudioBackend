@@ -16,36 +16,20 @@ public class CartItem {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @ManyToOne(fetch = FetchType.LAZY, optional = false)
-    @JoinColumn(name = "user_id", nullable = false)
+    @ManyToOne
+    @JoinColumn(name = "cart_id", referencedColumnName = "id")
+    private Cart cart;
+
+    @ManyToOne
+    @JoinColumn(name = "user_id", referencedColumnName = "id")
     private User user;
 
-    @ManyToOne(fetch = FetchType.LAZY, optional = false)
-    @JoinColumn(name = "bouquet_id", nullable = false)
+    @ManyToOne
+    @JoinColumn(name = "bouquet_id", referencedColumnName = "id")
     private Bouquet bouquet;
 
-    @Column(nullable = false)
     private int quantity;
 
-    @Column(name = "created_at", nullable = false, updatable = false)
+    @Column(name = "created_at")
     private LocalDateTime createdAt;
-
-    @Column(name = "cart_id", nullable = false)
-    private Long cartId;
-
-    @PrePersist
-    private void onCreate() {
-        createdAt = LocalDateTime.now();
-    }
-
-    public CartItem(User user, Bouquet bouquet, int quantity, Long cartId) {
-        this.user = user;
-        this.bouquet = bouquet;
-        this.quantity = quantity;
-        this.cartId = cartId;
-    }
-
-    public Long getBouquetId() {
-        return bouquet != null ? bouquet.getId() : null;
-    }
 }
