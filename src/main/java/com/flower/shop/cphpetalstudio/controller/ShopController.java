@@ -18,13 +18,17 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 import com.flower.shop.cphpetalstudio.dto.AddToCartRequest;
 import com.flower.shop.cphpetalstudio.dto.RemoveFromCartRequest;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.math.BigDecimal;
 import java.util.List;
 
 @Controller
-@RequestMapping("/shop")  // For rendering views
+@RequestMapping("/shop")
 public class ShopController {
+
+    private static final Logger logger = LoggerFactory.getLogger(ShopController.class);
 
     private final BouquetService bouquetService;
     private final OrderService orderService;
@@ -40,13 +44,12 @@ public class ShopController {
         this.cartService = cartService;
     }
 
-    // This is for rendering the shop page
     @GetMapping
     public String getShopPage(@RequestParam(required = false) BigDecimal maxPrice,
                               @RequestParam(required = false) BigDecimal minPrice,
                               @RequestParam(required = false) String category,
                               Model model) {
-
+        logger.info("Fetching shop page with filters - maxPrice: {}, minPrice: {}, category: {}", maxPrice, minPrice, category);
         List<Bouquet> bouquets;
 
         if (maxPrice != null) {
@@ -60,83 +63,84 @@ public class ShopController {
         }
 
         model.addAttribute("bouquets", bouquets);
-        return "shop";  // This will render the updated shop page with filtered bouquets
+        return "shop";
     }
 
-
-    // Fetch all bouquets with optional filters
     @GetMapping("/bouquets")
-    public List<Bouquet> getAllBouquets(
-            @RequestParam(required = false) BigDecimal maxPrice,
-            @RequestParam(required = false) BigDecimal minPrice,
-            @RequestParam(required = false) String category) {
+    public List<Bouquet> getAllBouquets(@RequestParam(required = false) BigDecimal maxPrice,
+                                        @RequestParam(required = false) BigDecimal minPrice,
+                                        @RequestParam(required = false) String category) {
+        logger.info("Fetching all bouquets with filters - maxPrice: {}, minPrice: {}, category: {}", maxPrice, minPrice, category);
         if (maxPrice != null) return bouquetService.getBouquetsUnderPrice(maxPrice);
         if (minPrice != null) return bouquetService.getBouquetsOverPrice(minPrice);
         if (category != null) return bouquetService.getBouquetsByCategory(category);
         return bouquetService.getAllBouquets();
     }
 
-    // Get a specific bouquet by ID
     @GetMapping("/bouquets/{id}")
     public Bouquet getBouquetById(@PathVariable Long id) {
+        logger.info("Fetching bouquet by ID: {}", id);
         return bouquetService.getBouquetById(id);
     }
 
-    // Add a bouquet to the user's cart
     @PostMapping("/cart/add")
     public CartItem addToCart(@RequestBody AddToCartRequest request, Authentication authentication) {
+        logger.info("Adding bouquet to cart - bouquetId: {}, quantity: {}", request.getBouquetId(), request.getQuantity());
         User user = userService.findByUsername(authentication.getName());
         Bouquet bouquet = bouquetService.getBouquetById(request.getBouquetId());
         return cartService.addToCart(user, bouquet, request.getQuantity());
     }
 
-    // View the user's cart
     @GetMapping("/cart")
     public List<CartItem> viewCart(Authentication authentication) {
+        logger.info("Viewing cart for user: {}", authentication.getName());
         User user = userService.findByUsername(authentication.getName());
-        return cartService.getCartByUser(user); // Returns a list of cart items
+        return cartService.getCartByUser(user);
     }
 
-    // Remove an item from the cart
     @PostMapping("/cart/remove")
     public CartItem removeFromCart(@RequestBody RemoveFromCartRequest request, Authentication authentication) {
+        logger.info("Removing bouquet from cart - bouquetId: {}", request.getBouquetId());
         User user = userService.findByUsername(authentication.getName());
         return cartService.removeFromCart(user, request.getBouquetId());
     }
 
-    // Place an order from the cart
     @PostMapping("/order")
     public Order createOrder(Authentication authentication) {
+        logger.info("Creating order for user: {}", authentication.getName());
         User user = userService.findByUsername(authentication.getName());
         return orderService.createOrderFromCart(user);
     }
 
-    // View a specific order by ID
     @GetMapping("/order/{id}")
     public Order viewOrder(@PathVariable Long id, Authentication authentication) {
+        logger.info("Viewing order - orderId: {}", id);
         User user = userService.findByUsername(authentication.getName());
         Order order = orderService.getOrderById(id);
         if (!order.getUser().equals(user)) {
+            logger.warn("Access denied for user: {} to order: {}", user.getUsername(), id);
             throw new AccessDeniedException("You are not authorized to view this order.");
         }
         return order;
     }
 
-    // Example in Spring Boot (Java)
     @PostMapping("/cart/add/{bouquetId}")
     public ResponseEntity<?> addToCart(@PathVariable Long bouquetId, @RequestBody CartItem cartItem) {
+        logger.info("Adding bouquet to cart - bouquetId: {}", bouquetId);
         cartService.addToCart(cartItem);
         return ResponseEntity.ok(new ResponseMessage("Item added to cart", true));
     }
 
     @PostMapping("/cart/remove/{itemId}")
     public ResponseEntity<?> removeFromCart(@PathVariable Long itemId) {
+        logger.info("Removing item from cart - itemId: {}", itemId);
         cartService.removeFromCart(itemId);
         return ResponseEntity.ok(new ResponseMessage("Item removed from cart", true));
     }
 
     @GetMapping("/cart/count")
     public ResponseEntity<Integer> getCartCount() {
+        logger.info("Fetching cart count");
         int count = cartService.getCartCount();
         return ResponseEntity.ok(count);
     }
