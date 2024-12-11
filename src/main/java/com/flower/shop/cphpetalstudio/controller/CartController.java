@@ -2,10 +2,7 @@ package com.flower.shop.cphpetalstudio.controller;
 
 import com.flower.shop.cphpetalstudio.dto.AddToCartRequest;
 import com.flower.shop.cphpetalstudio.dto.RemoveFromCartRequest;
-import com.flower.shop.cphpetalstudio.entity.Bouquet;
-import com.flower.shop.cphpetalstudio.entity.CartItem;
-import com.flower.shop.cphpetalstudio.entity.Order;
-import com.flower.shop.cphpetalstudio.entity.User;
+import com.flower.shop.cphpetalstudio.entity.*;
 import com.flower.shop.cphpetalstudio.repository.CartItemRepository;
 import com.flower.shop.cphpetalstudio.service.BouquetService;
 import com.flower.shop.cphpetalstudio.service.CartService;
@@ -109,7 +106,7 @@ class ShopController {
         return order;
     }
 
-   @PostMapping("/add")
+@PostMapping("/add")
 public ResponseEntity<CartItem> addToCart(@RequestBody AddToCartRequest request, Authentication authentication) {
     User user = userService.findByUsername(authentication.getName());
     Bouquet bouquet = bouquetService.getBouquetById(request.getBouquetId());
@@ -118,13 +115,24 @@ public ResponseEntity<CartItem> addToCart(@RequestBody AddToCartRequest request,
         return ResponseEntity.badRequest().body(null); // Return a bad request if bouquet is not found
     }
 
+    // Retrieve or create the cart for the user
+    Cart cart = user.getCart();
+    if (cart == null) {
+        cart = new Cart(user);
+        user.setCart(cart);
+    }
+
     Optional<CartItem> existingItem = cartItemRepository.findByUserAndBouquet(user, bouquet);
     CartItem item;
     if (existingItem.isPresent()) {
         item = existingItem.get();
         item.setQuantity(item.getQuantity() + request.getQuantity());
     } else {
-        item = new CartItem(user, bouquet, request.getQuantity(), user.getId()); // Set cartId to user's ID or another appropriate value
+        item = new CartItem();
+        item.setUser(user);
+        item.setBouquet(bouquet);
+        item.setQuantity(request.getQuantity());
+        item.setCart(cart); // Set the cart object directly
     }
     cartItemRepository.save(item);
     return ResponseEntity.ok(item); // Return the added/updated cart item

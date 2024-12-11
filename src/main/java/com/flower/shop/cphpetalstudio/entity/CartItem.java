@@ -48,4 +48,8 @@ public class CartItem {
     public Long getBouquetId() {
         return bouquet != null ? bouquet.getId() : null;
     }
+
+    public void setCart(Cart cart) {
+        this.cartId = cart.getId();
+    }
 }

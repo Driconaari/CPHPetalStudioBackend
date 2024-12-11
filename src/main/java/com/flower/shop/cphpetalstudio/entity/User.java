@@ -42,6 +42,9 @@ public class User {
     @Column(name = "is_company", nullable = false)
     private boolean isCompany = false; // Default value
 
+    @OneToOne
+    private Cart cart;
+
     /**
      * Splits the `role` field and returns a set of roles.
      */
@@ -61,4 +64,7 @@ public class User {
     }
 
 
+    public void setCart(Cart cart) {
+    this.cart = cart;
+}
 }
