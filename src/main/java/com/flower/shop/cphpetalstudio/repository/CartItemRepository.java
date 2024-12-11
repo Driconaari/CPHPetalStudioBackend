@@ -11,19 +11,9 @@ import java.util.Optional;
 
 @Repository
 public interface CartItemRepository extends JpaRepository<CartItem, Long> {
-
-    List<CartItem> findByUser(User user);
-
     Optional<CartItem> findByUserAndBouquet(User user, Bouquet bouquet);
-
+    List<CartItem> findByUser(User user);
     void deleteByUser(User user);
-
-    long countByUser(User user);
-
-    boolean existsByUserAndBouquet(User user, Bouquet bouquet);
-
-    List<CartItem> findByUserOrderByCreatedAtDesc(User user);
-
-    // Corrected method to reference bouquet's id using '_Id'
     Optional<CartItem> findByUserAndBouquet_Id(User user, Long bouquetId);
 }
+

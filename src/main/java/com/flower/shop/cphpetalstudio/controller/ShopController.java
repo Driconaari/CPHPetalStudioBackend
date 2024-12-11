@@ -5,6 +5,7 @@ import com.flower.shop.cphpetalstudio.entity.Bouquet;
 import com.flower.shop.cphpetalstudio.entity.CartItem;
 import com.flower.shop.cphpetalstudio.entity.Order;
 import com.flower.shop.cphpetalstudio.entity.User;
+import com.flower.shop.cphpetalstudio.repository.CartItemRepository;
 import com.flower.shop.cphpetalstudio.service.BouquetService;
 import com.flower.shop.cphpetalstudio.service.CartService;
 import com.flower.shop.cphpetalstudio.service.OrderService;
@@ -23,6 +24,7 @@ import org.slf4j.LoggerFactory;
 
 import java.math.BigDecimal;
 import java.util.List;
+import java.util.Optional;
 
 @Controller
 @RequestMapping("/shop")
@@ -30,14 +32,16 @@ public class ShopController {
 
     private static final Logger logger = LoggerFactory.getLogger(ShopController.class);
 
+    private final CartItemRepository cartItemRepository;
     private final BouquetService bouquetService;
     private final OrderService orderService;
     private final UserService userService;
     private final CartService cartService;
 
     @Autowired
-    public ShopController(BouquetService bouquetService, OrderService orderService,
+    public ShopController(CartItemRepository cartItemRepository, BouquetService bouquetService, OrderService orderService,
                           UserService userService, CartService cartService) {
+        this.cartItemRepository = cartItemRepository;
         this.bouquetService = bouquetService;
         this.orderService = orderService;
         this.userService = userService;
@@ -103,4 +107,33 @@ public class ShopController {
         return order;
     }
 
+
+    // Add to cart
+
+    @PostMapping("/add")
+    public CartItem addToCart(@RequestBody AddToCartRequest request, Authentication authentication) {
+        User user = userService.findByUsername(authentication.getName());
+        Bouquet bouquet = bouquetService.getBouquetById(request.getBouquetId());
+
+        if (bouquet == null) {
+            throw new IllegalArgumentException("Bouquet not found");
+        }
+
+        Optional<CartItem> existingItem = cartItemRepository.findByUserAndBouquet(user, bouquet);
+        if (existingItem.isPresent()) {
+            CartItem item = existingItem.get();
+            item.setQuantity(item.getQuantity() + request.getQuantity());
+            return cartItemRepository.save(item);
+        } else {
+            CartItem newItem = new CartItem(user, bouquet, request.getQuantity());
+            return cartItemRepository.save(newItem);
+        }
+    }
+
+    @PostMapping("/remove")
+    public void removeFromCart(@RequestBody RemoveFromCartRequest request, Authentication authentication) {
+        User user = userService.findByUsername(authentication.getName());
+        cartService.removeFromCart(user, request.getBouquetId());
+    }
 }
+
