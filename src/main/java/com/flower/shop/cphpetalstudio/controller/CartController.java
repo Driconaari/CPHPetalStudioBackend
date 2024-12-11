@@ -6,140 +6,73 @@ import com.flower.shop.cphpetalstudio.entity.*;
 import com.flower.shop.cphpetalstudio.repository.CartItemRepository;
 import com.flower.shop.cphpetalstudio.service.BouquetService;
 import com.flower.shop.cphpetalstudio.service.CartService;
-import com.flower.shop.cphpetalstudio.service.OrderService;
 import com.flower.shop.cphpetalstudio.service.UserService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.core.Authentication;
-import org.springframework.stereotype.Controller;
-import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 
-import java.math.BigDecimal;
 import java.util.List;
 import java.util.Optional;
 
-@Controller
-@RequestMapping("/shop")
-class ShopController {
+@RestController
+@RequestMapping("/cart")
+public class CartController {
 
-    private static final Logger logger = LoggerFactory.getLogger(ShopController.class);
+    private static final Logger logger = LoggerFactory.getLogger(CartController.class);
 
-    private final BouquetService bouquetService;
-    private final OrderService orderService;
     private final UserService userService;
     private final CartService cartService;
     private final CartItemRepository cartItemRepository;
+    private final BouquetService bouquetService;
 
     @Autowired
-    public ShopController(BouquetService bouquetService, OrderService orderService, UserService userService, CartService cartService, CartItemRepository cartItemRepository) {
-        this.bouquetService = bouquetService;
-        this.orderService = orderService;
+    public CartController(UserService userService, CartService cartService, CartItemRepository cartItemRepository, BouquetService bouquetService) {
         this.userService = userService;
         this.cartService = cartService;
         this.cartItemRepository = cartItemRepository;
+        this.bouquetService = bouquetService;
     }
 
-    @GetMapping
-    public String getShopPage(@RequestParam(required = false) BigDecimal maxPrice,
-                              @RequestParam(required = false) BigDecimal minPrice,
-                              @RequestParam(required = false) String category,
-                              Model model) {
-        logger.info("Fetching shop page with filters - maxPrice: {}, minPrice: {}, category: {}", maxPrice, minPrice, category);
-        List<Bouquet> bouquets;
+    @PostMapping("/add")
+    public ResponseEntity<CartItem> addToCart(@RequestBody AddToCartRequest request, Authentication authentication) {
+        logger.info("Add to cart request received: {}", request);
 
-        if (maxPrice != null) {
-            bouquets = bouquetService.getBouquetsUnderPrice(maxPrice);
-        } else if (minPrice != null) {
-            bouquets = bouquetService.getBouquetsOverPrice(minPrice);
-        } else if (category != null) {
-            bouquets = bouquetService.getBouquetsByCategory(category);
+        User user = userService.findByUsername(authentication.getName());
+        Bouquet bouquet = bouquetService.getBouquetById(request.getBouquetId());
+
+        if (bouquet == null) {
+            logger.error("Bouquet not found for ID: {}", request.getBouquetId());
+            return ResponseEntity.badRequest().body(null);
+        }
+
+        Cart cart = user.getCart();
+        if (cart == null) {
+            cart = new Cart(user);
+            user.setCart(cart);
+        }
+
+        Optional<CartItem> existingItem = cartItemRepository.findByUserAndBouquet(user, bouquet);
+        CartItem item;
+        if (existingItem.isPresent()) {
+            item = existingItem.get();
+            item.setQuantity(item.getQuantity() + request.getQuantity());
         } else {
-            bouquets = bouquetService.getAllBouquets();
+            item = new CartItem();
+            item.setUser(user);
+            item.setBouquet(bouquet);
+            item.setQuantity(request.getQuantity());
+            item.setCart(cart);
         }
-
-        model.addAttribute("bouquets", bouquets);
-        return "shop";
+        cartItemRepository.save(item);
+        logger.info("Item added to cart: {}", item);
+        return ResponseEntity.ok(item);
     }
-
-    @GetMapping("/bouquets")
-    @ResponseBody
-    public List<Bouquet> getAllBouquets(@RequestParam(required = false) BigDecimal maxPrice,
-                                        @RequestParam(required = false) BigDecimal minPrice,
-                                        @RequestParam(required = false) String category) {
-        logger.info("Fetching all bouquets with filters - maxPrice: {}, minPrice: {}, category: {}", maxPrice, minPrice, category);
-        if (maxPrice != null) return bouquetService.getBouquetsUnderPrice(maxPrice);
-        if (minPrice != null) return bouquetService.getBouquetsOverPrice(minPrice);
-        if (category != null) return bouquetService.getBouquetsByCategory(category);
-        return bouquetService.getAllBouquets();
-    }
-
-    @GetMapping("/bouquets/{id}")
-    @ResponseBody
-    public Bouquet getBouquetById(@PathVariable Long id) {
-        logger.info("Fetching bouquet by ID: {}", id);
-        return bouquetService.getBouquetById(id);
-    }
-
-    @PostMapping("/order")
-    @ResponseBody
-    public Order createOrder(Authentication authentication) {
-        logger.info("Creating order for user: {}", authentication.getName());
-        User user = userService.findByUsername(authentication.getName());
-        return orderService.createOrderFromCart(user);
-    }
-
-    @GetMapping("/order/{id}")
-    @ResponseBody
-    public Order viewOrder(@PathVariable Long id, Authentication authentication) {
-        logger.info("Viewing order - orderId: {}", id);
-        User user = userService.findByUsername(authentication.getName());
-        Order order = orderService.getOrderById(id);
-        if (!order.getUser().equals(user)) {
-            logger.warn("Access denied for user: {} to order: {}", user.getUsername(), id);
-            throw new AccessDeniedException("You are not authorized to view this order.");
-        }
-        return order;
-    }
-
-@PostMapping("/add")
-public ResponseEntity<CartItem> addToCart(@RequestBody AddToCartRequest request, Authentication authentication) {
-    User user = userService.findByUsername(authentication.getName());
-    Bouquet bouquet = bouquetService.getBouquetById(request.getBouquetId());
-
-    if (bouquet == null) {
-        return ResponseEntity.badRequest().body(null); // Return a bad request if bouquet is not found
-    }
-
-    // Retrieve or create the cart for the user
-    Cart cart = user.getCart();
-    if (cart == null) {
-        cart = new Cart(user);
-        user.setCart(cart);
-    }
-
-    Optional<CartItem> existingItem = cartItemRepository.findByUserAndBouquet(user, bouquet);
-    CartItem item;
-    if (existingItem.isPresent()) {
-        item = existingItem.get();
-        item.setQuantity(item.getQuantity() + request.getQuantity());
-    } else {
-        item = new CartItem();
-        item.setUser(user);
-        item.setBouquet(bouquet);
-        item.setQuantity(request.getQuantity());
-        item.setCart(cart); // Set the cart object directly
-    }
-    cartItemRepository.save(item);
-    return ResponseEntity.ok(item); // Return the added/updated cart item
-}
 
     @PostMapping("/remove")
-    @ResponseBody
     public ResponseEntity<?> removeFromCart(@RequestBody RemoveFromCartRequest request, Authentication authentication) {
         logger.info("Removing bouquet from cart - bouquetId: {}", request.getBouquetId());
 
@@ -153,7 +86,7 @@ public ResponseEntity<CartItem> addToCart(@RequestBody AddToCartRequest request,
         }
     }
 
-    @GetMapping("/cart")
+    @GetMapping
     public ResponseEntity<List<CartItem>> getCart(@RequestParam Long userId) {
         User user = userService.findById(userId);
         List<CartItem> cartItems = cartService.getCartByUser(user);
@@ -167,11 +100,10 @@ public ResponseEntity<CartItem> addToCart(@RequestBody AddToCartRequest request,
         return ResponseEntity.ok("Cart cleared successfully");
     }
 
-    @GetMapping("/cart/count")
+    @GetMapping("/count")
     public ResponseEntity<Integer> getCartCount(Authentication authentication) {
         User user = userService.findByUsername(authentication.getName());
         int count = cartItemRepository.countByUser(user);
         return ResponseEntity.ok(count);
     }
 }
-
