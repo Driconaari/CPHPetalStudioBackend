@@ -49,6 +49,7 @@ public class SecurityConfig {
 
                         // Authenticated-Only Endpoints
                         .requestMatchers("/dashboard").authenticated()
+                        .requestMatchers("/api/cart/add").hasAuthority("ROLE_USER") // Allow users with ROLE_USER to add items to cart
 
                         // Catch-All for All Other Requests
                         .anyRequest().authenticated()
