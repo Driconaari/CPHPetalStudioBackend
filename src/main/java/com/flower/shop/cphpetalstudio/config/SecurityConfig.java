@@ -45,6 +45,7 @@ public class SecurityConfig {
                         // Public Endpoints
                         .requestMatchers("/api/auth/**", "/", "/register", "/login").permitAll()
                         .requestMatchers("/bouquets", "/bouquets/{id}", "/api/bouquets").permitAll()
+                        .requestMatchers("/shop/add").permitAll() // Allow all users to add items to cart
 
                         // Admin-Only Endpoints
                         .requestMatchers("/bouquets/create", "/bouquets/{id}/edit", "/bouquets/{id}/delete").hasAuthority("ROLE_ADMIN")
@@ -52,7 +53,6 @@ public class SecurityConfig {
 
                         // Authenticated-Only Endpoints
                         .requestMatchers("/dashboard").authenticated()
-                        .requestMatchers("/api/cart/add", "/shop/add").hasAuthority("ROLE_USER") // Allow users with ROLE_USER to add items to cart
 
                         // Catch-All for All Other Requests
                         .anyRequest().authenticated()
