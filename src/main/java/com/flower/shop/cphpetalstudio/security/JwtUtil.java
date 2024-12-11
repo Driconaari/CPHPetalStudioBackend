@@ -2,6 +2,7 @@ package com.flower.shop.cphpetalstudio.security;
 
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
+import io.jsonwebtoken.MalformedJwtException;
 import io.jsonwebtoken.SignatureAlgorithm;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -34,9 +35,13 @@ public class JwtUtil {
         return claimsResolver.apply(claims);
     }
 
-    private Claims extractAllClaims(String token) {
+ private Claims extractAllClaims(String token) {
+    try {
         return Jwts.parser().setSigningKey(secret).parseClaimsJws(token).getBody();
+    } catch (MalformedJwtException ex) {
+        throw new IllegalArgumentException("Malformed JWT: " + token, ex);
     }
+}
 
     private Boolean isTokenExpired(String token) {
         return extractExpiration(token).before(new Date());
