@@ -30,9 +30,11 @@ public class User {
     @Column(nullable = false, unique = true)
     private String email;
 
-    /**
-     * Comma-separated roles, e.g., "ROLE_USER,ROLE_ADMIN".
-     */
+    // Ensure the User class has the correct association with Cart
+    @OneToOne
+    @JoinColumn(name = "cart_id") // The 'cart_id' will be the foreign key in the User table
+    private Cart cart;
+
     @Column(nullable = false)
     private String role;
 
@@ -42,23 +44,9 @@ public class User {
     @Column(name = "is_company", nullable = false)
     private boolean isCompany = false; // Default value
 
-    /**
-     * Splits the `role` field and returns a set of roles.
-     */
     public Set<String> getRoles() {
         return Arrays.stream(role.split(","))
                 .map(String::trim)
                 .collect(Collectors.toSet());
     }
-
-
-    public boolean isCompany() {
-        return isCompany;
-    }
-
-    public void setCompany(boolean company) {
-        isCompany = company;
-    }
-
-
 }

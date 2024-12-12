@@ -1,5 +1,6 @@
 package com.flower.shop.cphpetalstudio.repository;
 
+import com.flower.shop.cphpetalstudio.entity.Cart;
 import com.flower.shop.cphpetalstudio.entity.User;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
@@ -7,10 +8,6 @@ import org.springframework.stereotype.Repository;
 import java.util.Optional;
 
 @Repository
-public interface UserRepository extends JpaRepository<User, Long> {
-    boolean existsByUsername(String username);
-    boolean existsByEmail(String email);
-    Optional<User> findByUsername(String username);
-    Optional<User> findByEmail(String email);
-
+public interface CartRepository extends JpaRepository<Cart, Long> {
+    Optional<Cart> findByUser(User user);  // Find a user's cart
 }

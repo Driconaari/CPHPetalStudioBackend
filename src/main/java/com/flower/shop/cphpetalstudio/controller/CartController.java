@@ -1,87 +1,135 @@
 package com.flower.shop.cphpetalstudio.controller;
 
 import com.flower.shop.cphpetalstudio.dto.AddToCartRequest;
-import com.flower.shop.cphpetalstudio.dto.ApiError;
-import com.flower.shop.cphpetalstudio.dto.ApiResponse;
-import com.flower.shop.cphpetalstudio.dto.UpdateCartItemRequest;
+import com.flower.shop.cphpetalstudio.dto.CartItemDTO;
+import com.flower.shop.cphpetalstudio.dto.RemoveFromCartRequest;
+import com.flower.shop.cphpetalstudio.entity.Bouquet;
 import com.flower.shop.cphpetalstudio.entity.CartItem;
+import com.flower.shop.cphpetalstudio.entity.User;
+import com.flower.shop.cphpetalstudio.service.BouquetService;
 import com.flower.shop.cphpetalstudio.service.CartService;
+import com.flower.shop.cphpetalstudio.service.UserService;
+import com.flower.shop.cphpetalstudio.security.JwtUtil;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 @RestController
-@RequestMapping("/api/cart")
+@RequestMapping("/cart")
+@CrossOrigin(origins = "http://localhost:5500") // Allow frontend access
 public class CartController {
 
+    private static final Logger logger = LoggerFactory.getLogger(CartController.class);
+
+    private final UserService userService;
     private final CartService cartService;
+    private final BouquetService bouquetService;
+    private final JwtUtil jwtUtil;
 
     @Autowired
-    public CartController(CartService cartService) {
+    public CartController(UserService userService, CartService cartService, BouquetService bouquetService, JwtUtil jwtUtil) {
+        this.userService = userService;
         this.cartService = cartService;
+        this.bouquetService = bouquetService;
+        this.jwtUtil = jwtUtil;
     }
 
-    @PreAuthorize("hasRole('USER')")
-    @PostMapping("/add")
-    public ResponseEntity<?> addBouquetToCart(@RequestBody AddToCartRequest request, Authentication authentication) {
-        try {
-            String username = authentication.getName();
-            CartItem addedItem = cartService.addBouquetToCart(username, request.getBouquetId(), request.getQuantity());
-            return ResponseEntity.ok(addedItem);
-        } catch (Exception e) {
-            return ResponseEntity.badRequest().body(new ApiError("Failed to add bouquet to cart", e.getMessage()));
-        }
-    }
-
-    @PreAuthorize("hasRole('USER')")
-    @DeleteMapping("/remove/{id}")
-    public ResponseEntity<?> removeBouquetFromCart(@PathVariable Long id, Authentication authentication) {
-        try {
-            String username = authentication.getName();
-            cartService.removeBouquetFromCart(username, id);
-            return ResponseEntity.ok(new ApiResponse("Item removed from cart successfully"));
-        } catch (Exception e) {
-            return ResponseEntity.badRequest().body(new ApiError("Failed to remove bouquet from cart", e.getMessage()));
-        }
-    }
-
-    @PreAuthorize("hasRole('USER')")
+    // Retrieve all cart items for the authenticated user jwt token local storage
     @GetMapping
-    public ResponseEntity<?> getCart(Authentication authentication) {
+    public ResponseEntity<List<CartItemDTO>> getCartItemsForUser(@RequestHeader("Authorization") String authorizationHeader) {
         try {
-            String username = authentication.getName();
-            List<CartItem> cartItems = cartService.getCartForUser(username);
-            return ResponseEntity.ok(cartItems);
+            if (authorizationHeader == null || !authorizationHeader.startsWith("Bearer ")) {
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+            }
+
+            String token = authorizationHeader.substring(7);
+            String username = jwtUtil.extractUsername(token);
+
+            User user = userService.findByUsername(username);
+            if (user == null) {
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body(null);
+            }
+
+            List<CartItem> cartItems = cartService.getCartItemsByUser(user);
+
+            List<CartItemDTO> cartItemDTOs = cartItems.stream()
+                    .map(CartItemDTO::new)
+                    .collect(Collectors.toList());
+
+            return ResponseEntity.ok(cartItemDTOs);
         } catch (Exception e) {
-            return ResponseEntity.badRequest().body(new ApiError("Failed to retrieve cart", e.getMessage()));
+            logger.error("Error retrieving cart items: {}", e.getMessage(), e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
     }
 
-    @PreAuthorize("hasRole('USER')")
-    @PutMapping("/update/{id}")
-    public ResponseEntity<?> updateCartItem(@PathVariable Long id, @RequestBody UpdateCartItemRequest request, Authentication authentication) {
+
+    // Add an item to the cart
+    @PostMapping("/add-to-cart")
+    public ResponseEntity<String> addToCart(@RequestBody AddToCartRequest request, Authentication authentication) {
+        logger.info("Add to cart request received: {}", request);
+
         try {
+            if (authentication == null) {
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("User not authenticated");
+            }
+
             String username = authentication.getName();
-            CartItem updatedItem = cartService.updateCartItem(username, id, request.getQuantity());
-            return ResponseEntity.ok(updatedItem);
+            User user = userService.findByUsername(username);
+
+            Bouquet bouquet = bouquetService.getBouquetById(request.getBouquetId());
+            if (bouquet == null) {
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Bouquet not found");
+            }
+
+            cartService.addToCart(user, bouquet, request.getQuantity());
+            return ResponseEntity.ok("Item added to cart successfully");
         } catch (Exception e) {
-            return ResponseEntity.badRequest().body(new ApiError("Failed to update cart item", e.getMessage()));
+            logger.error("Error adding item to cart: {}", e.getMessage(), e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Failed to add item to cart");
         }
     }
 
-    @PreAuthorize("hasRole('USER')")
-    @DeleteMapping("/clear")
-    public ResponseEntity<?> clearCart(Authentication authentication) {
+    // Remove an item from the cart
+    @PostMapping("/remove")
+    public ResponseEntity<String> removeFromCart(@RequestBody RemoveFromCartRequest request, Authentication authentication) {
+        logger.info("Remove from cart request: Bouquet ID {}", request.getBouquetId());
+
         try {
+            if (authentication == null) {
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("User not authenticated");
+            }
+
             String username = authentication.getName();
-            cartService.clearCart(username);
-            return ResponseEntity.ok(new ApiResponse("Cart cleared successfully"));
+            User user = userService.findByUsername(username);
+
+            cartService.removeFromCart(user, request.getBouquetId());
+            return ResponseEntity.ok("Item removed from cart");
         } catch (Exception e) {
-            return ResponseEntity.badRequest().body(new ApiError("Failed to clear cart", e.getMessage()));
+            logger.error("Error removing item from cart: {}", e.getMessage(), e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Failed to remove item from cart");
         }
+    }
+
+    // Retrieve cart count for the authenticated user
+    @GetMapping("/count")
+    public ResponseEntity<Integer> getCartCount(Authentication authentication) {
+        if (authentication == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(0);
+        }
+
+        String username = authentication.getName();
+        User user = userService.findByUsername(username);
+
+        int cartCount = cartService.getCartCount(user);
+        return ResponseEntity.ok(cartCount);
     }
 }
