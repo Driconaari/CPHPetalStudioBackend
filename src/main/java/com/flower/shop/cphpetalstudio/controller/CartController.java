@@ -57,6 +57,7 @@ public class CartController {
             }
 
             // Add to cart
+
             cartService.addToCart(user, bouquet, request.getQuantity());
             logger.info("Item added to cart: Bouquet ID {}, Quantity {}", request.getBouquetId(), request.getQuantity());
 

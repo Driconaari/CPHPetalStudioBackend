@@ -18,8 +18,9 @@ public class Cart {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    // Ensure that the 'user' field is mapped properly in the Cart entity
-    @OneToOne(mappedBy = "cart")
+    // One-to-One relationship with User (Each user has exactly one cart)
+    @OneToOne
+    @JoinColumn(name = "user_id", nullable = false)  // Ensure 'user_id' is non-null
     private User user;
 
     private LocalDateTime createdAt;
@@ -35,3 +36,4 @@ public class Cart {
         }
     }
 }
+

@@ -40,30 +40,24 @@ public class CartService {
 
     @Transactional
     public void addToCart(User user, Bouquet bouquet, int quantity) {
-        // Find the cart for the user, or create one if it doesn't exist
+        // Find the user's cart or create a new one if it doesn't exist
         Cart cart = cartRepository.findByUser(user).orElseGet(() -> {
-            Cart newCart = new Cart(user);  // Create a new Cart for the user if it doesn't exist
-            cartRepository.save(newCart);    // Save the new Cart and associate the user
-            return newCart; // Return the new Cart
+            // Create a new Cart if the user doesn't have one
+            Cart newCart = new Cart(user); // Associate the cart with the user
+            return cartRepository.save(newCart); // Save the new cart
         });
 
-        Optional<CartItem> existingCartItem = cartItemRepository.findByUserAndBouquet(user, bouquet);
+        // Now that we have the cart, we can add the bouquet to it.
+        // You might need a CartItem entity here if you're associating multiple items with a cart.
+        CartItem cartItem = new CartItem();
+        cartItem.setCart(cart);
+        cartItem.setBouquet(bouquet);
+        cartItem.setQuantity(quantity);
 
-        if (existingCartItem.isPresent()) {
-            // Update the quantity if the item already exists in the cart
-            CartItem cartItem = existingCartItem.get();
-            cartItem.setQuantity(cartItem.getQuantity() + quantity);
-            cartItemRepository.save(cartItem);
-        } else {
-            // Add a new cart item if it's not already in the cart
-            CartItem cartItem = new CartItem();
-            cartItem.setUser(user);
-            cartItem.setBouquet(bouquet);
-            cartItem.setQuantity(quantity);
-            cartItem.setCart(cart);  // Set the cart for the cart item
-            cartItemRepository.save(cartItem);
-        }
+        // Save the cartItem in the repository
+        cartItemRepository.save(cartItem);
     }
+
 
 
 
