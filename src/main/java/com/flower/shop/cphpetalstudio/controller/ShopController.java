@@ -1,12 +1,17 @@
 package com.flower.shop.cphpetalstudio.controller;
 
-import com.flower.shop.cphpetalstudio.entity.*;
+import com.flower.shop.cphpetalstudio.dto.AddToCartRequest;
+import com.flower.shop.cphpetalstudio.entity.Bouquet;
+import com.flower.shop.cphpetalstudio.entity.Order;
+import com.flower.shop.cphpetalstudio.entity.User;
 import com.flower.shop.cphpetalstudio.service.BouquetService;
+import com.flower.shop.cphpetalstudio.service.CartService;
 import com.flower.shop.cphpetalstudio.service.OrderService;
 import com.flower.shop.cphpetalstudio.service.UserService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Controller;
@@ -25,12 +30,14 @@ public class ShopController {
     private final BouquetService bouquetService;
     private final OrderService orderService;
     private final UserService userService;
+    private final CartService cartService;
 
     @Autowired
-    public ShopController(BouquetService bouquetService, OrderService orderService, UserService userService) {
+    public ShopController(BouquetService bouquetService, OrderService orderService, UserService userService, CartService cartService) {
         this.bouquetService = bouquetService;
         this.orderService = orderService;
         this.userService = userService;
+        this.cartService = cartService;
     }
 
     @GetMapping
@@ -93,5 +100,17 @@ public class ShopController {
             throw new AccessDeniedException("You are not authorized to view this order.");
         }
         return order;
+    }
+
+    @PostMapping("/add-to-cart")
+    @ResponseBody
+    public ResponseEntity<String> addToCart(@RequestBody AddToCartRequest request, Authentication authentication) {
+        logger.info("Add to cart request received from shop page: {}", request);
+
+        User user = userService.findByUsername(authentication.getName());
+        Bouquet bouquet = bouquetService.getBouquetById(request.getBouquetId());
+        cartService.addToCart(user, bouquet, request.getQuantity());
+
+        return ResponseEntity.ok("Item added to cart successfully");
     }
 }
