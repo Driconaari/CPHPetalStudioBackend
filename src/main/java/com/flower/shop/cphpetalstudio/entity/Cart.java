@@ -18,8 +18,8 @@ public class Cart {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    // Corrected mapping to match the user side
-    @OneToOne(mappedBy = "cart")  // "cart" in the User class is the owning side
+    // Ensure that the 'user' field is mapped properly in the Cart entity
+    @OneToOne(mappedBy = "cart")
     private User user;
 
     private LocalDateTime createdAt;

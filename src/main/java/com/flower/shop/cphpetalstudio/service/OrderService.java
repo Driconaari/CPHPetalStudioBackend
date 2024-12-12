@@ -12,6 +12,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -51,12 +52,13 @@ public class OrderService {
         return orderRepository.save(order);
     }
 
-    // Calculate the total price of the order
+// Calculate the total price of the order
     private double calculateTotal(List<Bouquet> bouquets) {
         return bouquets.stream()
-                .mapToDouble(Bouquet::getPrice)
+                .mapToDouble(bouquet -> bouquet.getPrice().doubleValue())  // Convert BigDecimal to double
                 .sum();
     }
+
 
     // Update the stock for all bouquets in an order
     private void updateBouquetStock(List<Bouquet> bouquets) {
@@ -136,9 +138,12 @@ public class OrderService {
         Order order = new Order();
         order.setUser(user);
         order.setBouquets(bouquets);
+
+        // Calculate total using BigDecimal for precision
         order.setTotal(cartItems.stream()
-                .mapToDouble(cartItem -> cartItem.getBouquet().getPrice() * cartItem.getQuantity())
-                .sum());
+                .map(cartItem -> cartItem.getBouquet().getPrice().multiply(new BigDecimal(cartItem.getQuantity())))
+                .reduce(BigDecimal.ZERO, BigDecimal::add).doubleValue());  // Convert to double after sum
+
         order.setStatus("PLACED");
         order.setOrderDate(LocalDateTime.now());
 

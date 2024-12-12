@@ -30,9 +30,9 @@ public class User {
     @Column(nullable = false, unique = true)
     private String email;
 
-    // Corrected one-to-one relationship with Cart
+    // Ensure the User class has the correct association with Cart
     @OneToOne
-    @JoinColumn(name = "cart_id", referencedColumnName = "id") // Ensure the foreign key reference is correct
+    @JoinColumn(name = "cart_id") // The 'cart_id' will be the foreign key in the User table
     private Cart cart;
 
     @Column(nullable = false)
@@ -44,25 +44,9 @@ public class User {
     @Column(name = "is_company", nullable = false)
     private boolean isCompany = false; // Default value
 
-    /**
-     * Splits the `role` field and returns a set of roles.
-     */
     public Set<String> getRoles() {
         return Arrays.stream(role.split(","))
                 .map(String::trim)
                 .collect(Collectors.toSet());
-    }
-
-    // Getters and setters
-    public boolean isCompany() {
-        return isCompany;
-    }
-
-    public void setCompany(boolean company) {
-        isCompany = company;
-    }
-
-    public void setCart(Cart cart) {
-        this.cart = cart;
     }
 }

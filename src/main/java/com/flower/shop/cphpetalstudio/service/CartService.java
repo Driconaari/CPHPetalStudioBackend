@@ -6,12 +6,14 @@ import com.flower.shop.cphpetalstudio.entity.User;
 import com.flower.shop.cphpetalstudio.entity.Bouquet;
 import com.flower.shop.cphpetalstudio.repository.CartItemRepository;
 import com.flower.shop.cphpetalstudio.repository.CartRepository;
+import com.flower.shop.cphpetalstudio.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
@@ -21,49 +23,53 @@ import java.util.Optional;
 public class CartService {
 
     private final CartItemRepository cartItemRepository;
-    private final CartRepository cartRepository; // Assuming you have a CartRepository for Cart persistence
+    private final CartRepository cartRepository;
+    private final UserRepository userRepository; // Added to fetch users
     private static final Logger logger = LoggerFactory.getLogger(CartService.class);
+    private UserService userService;
 
     @Autowired
-    public CartService(CartItemRepository cartItemRepository, CartRepository cartRepository) {
+    public CartService(CartItemRepository cartItemRepository, CartRepository cartRepository, UserRepository userRepository, UserService userService) {
         this.cartItemRepository = cartItemRepository;
         this.cartRepository = cartRepository;
+        this.userRepository = userRepository;
+        this.userService = userService;
     }
 
-    public CartItem addToCart(User user, Bouquet bouquet, int quantity) {
-        logger.info("Adding bouquet to cart: {}", bouquet.getName());
-
-        // Retrieve or create the cart for the user
+    @Transactional
+    public void addToCart(User user, Bouquet bouquet, int quantity) {
+        // Ensure the user has a cart
         Cart cart = user.getCart();
         if (cart == null) {
             cart = new Cart(user);
-            cart.setCreatedAt(LocalDateTime.now()); // Set the created_at field for the Cart
             user.setCart(cart);
-            cart = cartRepository.save(cart); // Save the Cart to the database before adding CartItem
+            cart = cartRepository.save(cart);
         }
 
-        // Find existing cart item
+        // Check if bouquet already exists in the user's cart
         Optional<CartItem> existingItem = cartItemRepository.findByUserAndBouquet(user, bouquet);
-
         if (existingItem.isPresent()) {
+            // Update the quantity if bouquet already exists
             CartItem cartItem = existingItem.get();
             cartItem.setQuantity(cartItem.getQuantity() + quantity);
-            return cartItemRepository.save(cartItem);
+            cartItemRepository.save(cartItem);
         } else {
-            CartItem newCartItem = new CartItem();
-            newCartItem.setUser(user);
-            newCartItem.setBouquet(bouquet);
-            newCartItem.setCart(cart);
-            newCartItem.setQuantity(quantity);
-            newCartItem.setCreatedAt(LocalDateTime.now()); // Set created_at for the CartItem
-            return cartItemRepository.save(newCartItem);
+            // Otherwise, add a new item to the cart
+            CartItem cartItem = new CartItem();
+            cartItem.setUser(user);
+            cartItem.setBouquet(bouquet);
+            cartItem.setQuantity(quantity);
+            cartItem.setCart(cart);
+            cartItemRepository.save(cartItem);
         }
     }
 
 
-    public List<CartItem> getCartByUser(User user) {
+    public List<CartItem> getCartByUser(Long userId) {
+        User user = userService.findById(userId);
         return cartItemRepository.findByUser(user);
     }
+
 
     public void removeFromCart(User user, Long bouquetId) {
         CartItem cartItem = cartItemRepository.findByUserAndBouquet_Id(user, bouquetId)
@@ -71,16 +77,25 @@ public class CartService {
         cartItemRepository.delete(cartItem);
     }
 
-    public void clearCart(User user) {
+
+    public void clearCart(Long userId) {
+        User user = userService.findById(userId);
         cartItemRepository.deleteByUser(user);
     }
 
-    public double getTotalPrice(User user) {
+
+    public double getTotalPrice(Long userId) {
+        User user = userRepository.findById(userId).orElseThrow(() -> new RuntimeException("User not found"));
+
         // Calculate total price of all items in the cart
         List<CartItem> cartItems = cartItemRepository.findByUser(user);
+
         return cartItems.stream()
-                .mapToDouble(cartItem -> cartItem.getBouquet().getPrice() * cartItem.getQuantity())
+                .mapToDouble(cartItem -> {
+                    BigDecimal price = cartItem.getBouquet().getPrice(); // Price as BigDecimal
+                    BigDecimal quantity = BigDecimal.valueOf(cartItem.getQuantity()); // Convert quantity to BigDecimal
+                    return price.multiply(quantity).doubleValue(); // Multiply BigDecimal values and convert result to double
+                })
                 .sum();
     }
-
 }

@@ -37,40 +37,35 @@ public class CartController {
         this.bouquetService = bouquetService;
     }
 
-    @PostMapping("/add")
-    public ResponseEntity<CartItem> addToCart(@RequestBody AddToCartRequest request, Authentication authentication) {
+    @PostMapping("/add-to-cart")
+    @ResponseBody
+    public ResponseEntity<?> addToCart(@RequestBody AddToCartRequest request, Authentication authentication) {
         logger.info("Add to cart request received: {}", request);
 
-        User user = userService.findByUsername(authentication.getName());
-        Bouquet bouquet = bouquetService.getBouquetById(request.getBouquetId());
+        try {
+            // Verify user authentication
+            String username = authentication.getName();
+            logger.info("Authenticated user: {}", username);
+            User user = userService.findByUsername(username);
 
-        if (bouquet == null) {
-            logger.error("Bouquet not found for ID: {}", request.getBouquetId());
-            return ResponseEntity.badRequest().body(null);
-        }
+            // Verify bouquet existence
+            Bouquet bouquet = bouquetService.getBouquetById(request.getBouquetId());
+            if (bouquet == null) {
+                logger.warn("Bouquet with ID {} not found", request.getBouquetId());
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Bouquet not found");
+            }
 
-        Cart cart = user.getCart();
-        if (cart == null) {
-            cart = new Cart(user);
-            user.setCart(cart);
-        }
+            // Add to cart
+            cartService.addToCart(user, bouquet, request.getQuantity());
+            logger.info("Item added to cart: Bouquet ID {}, Quantity {}", request.getBouquetId(), request.getQuantity());
 
-        Optional<CartItem> existingItem = cartItemRepository.findByUserAndBouquet(user, bouquet);
-        CartItem item;
-        if (existingItem.isPresent()) {
-            item = existingItem.get();
-            item.setQuantity(item.getQuantity() + request.getQuantity());
-        } else {
-            item = new CartItem();
-            item.setUser(user);
-            item.setBouquet(bouquet);
-            item.setQuantity(request.getQuantity());
-            item.setCart(cart);
+            return ResponseEntity.ok("Item added to cart successfully");
+        } catch (Exception e) {
+            logger.error("Error adding item to cart: {}", e.getMessage(), e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Failed to add item to cart");
         }
-        cartItemRepository.save(item);
-        logger.info("Item added to cart: {}", item);
-        return ResponseEntity.ok(item);
     }
+
 
     @PostMapping("/remove")
     public ResponseEntity<?> removeFromCart(@RequestBody RemoveFromCartRequest request, Authentication authentication) {
@@ -78,6 +73,7 @@ public class CartController {
 
         try {
             User user = userService.findByUsername(authentication.getName());
+            // Pass bouquetId (Long) instead of the entire Bouquet object
             cartService.removeFromCart(user, request.getBouquetId());
             return ResponseEntity.ok("Item removed from cart");
         } catch (Exception e) {
@@ -86,17 +82,16 @@ public class CartController {
         }
     }
 
+
     @GetMapping
     public ResponseEntity<List<CartItem>> getCart(@RequestParam Long userId) {
-        User user = userService.findById(userId);
-        List<CartItem> cartItems = cartService.getCartByUser(user);
+        List<CartItem> cartItems = cartService.getCartByUser(userId);  // Correct usage
         return ResponseEntity.ok(cartItems);
     }
 
     @PostMapping("/clear")
     public ResponseEntity<String> clearCart(@RequestParam Long userId) {
-        User user = userService.findById(userId);
-        cartService.clearCart(user);
+        cartService.clearCart(userId);  // Correct usage
         return ResponseEntity.ok("Cart cleared successfully");
     }
 
