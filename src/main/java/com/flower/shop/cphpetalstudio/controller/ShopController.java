@@ -1,6 +1,7 @@
 package com.flower.shop.cphpetalstudio.controller;
 
 import com.flower.shop.cphpetalstudio.dto.AddToCartRequest;
+import com.flower.shop.cphpetalstudio.dto.ApiResponse;
 import com.flower.shop.cphpetalstudio.entity.Bouquet;
 import com.flower.shop.cphpetalstudio.entity.Order;
 import com.flower.shop.cphpetalstudio.entity.User;
@@ -119,19 +120,20 @@ public class ShopController {
             Bouquet bouquet = bouquetService.getBouquetById(request.getBouquetId());
             if (bouquet == null) {
                 logger.warn("Bouquet with ID {} not found", request.getBouquetId());
-                return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Bouquet not found");
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new ApiResponse("Bouquet not found"));
             }
 
             // Add to cart
             cartService.addToCart(user, bouquet, request.getQuantity());
             logger.info("Item added to cart: Bouquet ID {}, Quantity {}", request.getBouquetId(), request.getQuantity());
 
-            return ResponseEntity.ok("Item added to cart successfully");
+            return ResponseEntity.ok(new ApiResponse("Item added to cart successfully"));
         } catch (Exception e) {
             logger.error("Error adding item to cart: {}", e.getMessage(), e);
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Failed to add item to cart");
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(new ApiResponse("Failed to add item to cart"));
         }
     }
+
 
 
 }
