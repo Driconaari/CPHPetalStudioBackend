@@ -48,19 +48,15 @@ public class CartService {
         });
 
         // Now that we have the cart, we can add the bouquet to it.
-        // You might need a CartItem entity here if you're associating multiple items with a cart.
         CartItem cartItem = new CartItem();
         cartItem.setCart(cart);
         cartItem.setBouquet(bouquet);
         cartItem.setQuantity(quantity);
+        cartItem.setUser(user); // Ensure the user is set on the CartItem
 
         // Save the cartItem in the repository
         cartItemRepository.save(cartItem);
     }
-
-
-
-
 
 
     public List<CartItem> getCartByUser(Long userId) {
