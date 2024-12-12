@@ -88,4 +88,7 @@ public class BouquetService {
     public List<Bouquet> findAllBouquets() {
         return bouquetRepository.findAll(); // Make sure this returns the bouquets correctly
     }
+    public List<Bouquet> getBouquetsByOccasion(String occasion) {
+        return bouquetRepository.findByOccasion(occasion);
+    }
 }

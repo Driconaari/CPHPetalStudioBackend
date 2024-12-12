@@ -45,6 +45,7 @@ public class ShopController {
     public String getShopPage(@RequestParam(required = false) BigDecimal maxPrice,
                               @RequestParam(required = false) BigDecimal minPrice,
                               @RequestParam(required = false) String category,
+                              @RequestParam(required = false) String occasion,
                               Model model) {
 
         List<Bouquet> bouquets;
@@ -55,6 +56,8 @@ public class ShopController {
             bouquets = bouquetService.getBouquetsOverPrice(minPrice);
         } else if (category != null) {
             bouquets = bouquetService.getBouquetsByCategory(category);
+        } else if (occasion != null) {
+            bouquets = bouquetService.getBouquetsByOccasion(occasion);
         } else {
             bouquets = bouquetService.getAllBouquets();
         }

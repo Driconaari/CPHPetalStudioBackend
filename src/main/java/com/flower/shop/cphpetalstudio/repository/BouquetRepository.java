@@ -21,4 +21,7 @@ public interface BouquetRepository extends JpaRepository<Bouquet, Long> {
     // New methods
     List<Bouquet> findByPriceLessThanEqual(BigDecimal maxPrice);
     List<Bouquet> findByPriceGreaterThan(BigDecimal minPrice);
+
+    List<Bouquet> findByOccasion(String occasion);
+
 }

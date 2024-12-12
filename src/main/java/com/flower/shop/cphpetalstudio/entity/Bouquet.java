@@ -19,6 +19,7 @@ public class Bouquet {
     private boolean featured;
     private String category;
     private int stockQuantity;
+    private String occasion;
 
     @Column(name = "created_at")
     private LocalDateTime createdAt;
@@ -100,5 +101,13 @@ public class Bouquet {
 
     public void setCreatedAt(LocalDateTime createdAt) {
         this.createdAt = createdAt;
+    }
+
+    public void setOccasion(String occasion) {
+        this.occasion = occasion;
+    }
+
+    public String getOccasion() {
+        return occasion;
     }
 }
