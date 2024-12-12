@@ -1,11 +1,9 @@
-// Cart.java
 package com.flower.shop.cphpetalstudio.entity;
 
 import jakarta.persistence.*;
 import lombok.*;
 
 import java.time.LocalDateTime;
-
 
 @Entity
 @Table(name = "carts")
@@ -20,7 +18,8 @@ public class Cart {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @OneToOne(mappedBy = "cart", cascade = CascadeType.ALL)
+    // Corrected mapping to match the user side
+    @OneToOne(mappedBy = "cart")  // "cart" in the User class is the owning side
     private User user;
 
     private LocalDateTime createdAt;

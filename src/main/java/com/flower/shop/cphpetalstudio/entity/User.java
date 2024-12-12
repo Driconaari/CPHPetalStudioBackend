@@ -30,12 +30,11 @@ public class User {
     @Column(nullable = false, unique = true)
     private String email;
 
-    @OneToOne(mappedBy = "user", cascade = CascadeType.ALL)
+    // Corrected one-to-one relationship with Cart
+    @OneToOne
+    @JoinColumn(name = "cart_id", referencedColumnName = "id") // Ensure the foreign key reference is correct
     private Cart cart;
 
-    /**
-     * Comma-separated roles, e.g., "ROLE_USER,ROLE_ADMIN".
-     */
     @Column(nullable = false)
     private String role;
 
@@ -44,8 +43,6 @@ public class User {
 
     @Column(name = "is_company", nullable = false)
     private boolean isCompany = false; // Default value
-
-
 
     /**
      * Splits the `role` field and returns a set of roles.
@@ -56,7 +53,7 @@ public class User {
                 .collect(Collectors.toSet());
     }
 
-
+    // Getters and setters
     public boolean isCompany() {
         return isCompany;
     }
@@ -65,8 +62,7 @@ public class User {
         isCompany = company;
     }
 
-
     public void setCart(Cart cart) {
-    this.cart = cart;
-}
+        this.cart = cart;
+    }
 }
