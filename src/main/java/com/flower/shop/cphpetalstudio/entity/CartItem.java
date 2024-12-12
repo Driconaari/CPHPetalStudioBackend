@@ -30,10 +30,8 @@ public class CartItem {
     @Column(name = "created_at", nullable = false, updatable = false)
     private LocalDateTime createdAt;
 
-    @Column(name = "cart_id", nullable = false)
-    private Long cartId;
-
     @ManyToOne(cascade = CascadeType.PERSIST)
+    @JoinColumn(name = "cart_id", nullable = false)
     private Cart cart;
 
     @PrePersist
@@ -41,18 +39,14 @@ public class CartItem {
         createdAt = LocalDateTime.now();
     }
 
-    public CartItem(User user, Bouquet bouquet, int quantity, Long cartId) {
+    public CartItem(User user, Bouquet bouquet, int quantity, Cart cart) {
         this.user = user;
         this.bouquet = bouquet;
         this.quantity = quantity;
-        this.cartId = cartId;
+        this.cart = cart;
     }
 
     public Long getBouquetId() {
         return bouquet != null ? bouquet.getId() : null;
-    }
-
-    public void setCart(Cart cart) {
-        this.cartId = cart.getId();
     }
 }

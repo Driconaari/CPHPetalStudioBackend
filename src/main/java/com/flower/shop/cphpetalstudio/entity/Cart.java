@@ -6,6 +6,7 @@ import lombok.*;
 
 import java.time.LocalDateTime;
 
+
 @Entity
 @Table(name = "carts")
 @Getter
@@ -19,7 +20,7 @@ public class Cart {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @OneToOne(mappedBy = "cart")
+    @OneToOne(mappedBy = "cart", cascade = CascadeType.ALL)
     private User user;
 
     private LocalDateTime createdAt;
@@ -33,7 +34,5 @@ public class Cart {
         if (createdAt == null) {
             createdAt = LocalDateTime.now();
         }
-
-        // Other fields and methods
     }
 }
