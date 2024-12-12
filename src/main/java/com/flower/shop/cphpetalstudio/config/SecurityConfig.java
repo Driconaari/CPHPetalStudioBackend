@@ -46,6 +46,7 @@ public class SecurityConfig {
                         .requestMatchers("/api/auth/**", "/", "/register", "/login").permitAll()
                         .requestMatchers("/bouquets", "/bouquets/{id}", "/api/bouquets").permitAll()
                         .requestMatchers("/shop/add").permitAll() // Allow all users to add items to cart
+                        .requestMatchers("/shop/add-to-cart").permitAll() // Allow all users to add items to cart
 
                         // Admin-Only Endpoints
                         .requestMatchers("/bouquets/create", "/bouquets/{id}/edit", "/bouquets/{id}/delete").hasAuthority("ROLE_ADMIN")
