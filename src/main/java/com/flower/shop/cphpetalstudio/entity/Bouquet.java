@@ -33,9 +33,20 @@ public class Bouquet {
         createdAt = LocalDateTime.now();
     }
 
+
+
     @PreUpdate
     protected void onUpdate() {
         // Optionally handle updates if you need a timestamp change
+    }
+
+
+    public BigDecimal getPrice() {
+        return price;
+    }
+
+    public void setPrice(BigDecimal price) {
+        this.price = price;
     }
 
     public void setId(Long bouquetId) {
@@ -62,13 +73,7 @@ public class Bouquet {
         this.description = description;
     }
 
-    public BigDecimal getPrice() {
-        return price;
-    }
 
-    public void setPrice(BigDecimal price) {
-        this.price = price;
-    }
 
     public String getImageUrl() {
         return imageUrl;

@@ -27,6 +27,7 @@ public class CartService {
     private final UserRepository userRepository; // Added to fetch users
     private static final Logger logger = LoggerFactory.getLogger(CartService.class);
     private UserService userService;
+    private BouquetService bouquetService;
 
     @Autowired
     public CartService(CartItemRepository cartItemRepository, CartRepository cartRepository, UserRepository userRepository, UserService userService) {
@@ -38,31 +39,23 @@ public class CartService {
 
     @Transactional
     public void addToCart(User user, Bouquet bouquet, int quantity) {
-        // Ensure the user has a cart
-        Cart cart = user.getCart();
-        if (cart == null) {
-            cart = new Cart(user);
-            user.setCart(cart);
-            cart = cartRepository.save(cart);
-        }
+        Optional<CartItem> existingCartItem = cartItemRepository.findByUserAndBouquet(user, bouquet);
 
-        // Check if bouquet already exists in the user's cart
-        Optional<CartItem> existingItem = cartItemRepository.findByUserAndBouquet(user, bouquet);
-        if (existingItem.isPresent()) {
-            // Update the quantity if bouquet already exists
-            CartItem cartItem = existingItem.get();
+        if (existingCartItem.isPresent()) {
+            // Update the quantity if the item already exists in the cart
+            CartItem cartItem = existingCartItem.get();
             cartItem.setQuantity(cartItem.getQuantity() + quantity);
             cartItemRepository.save(cartItem);
         } else {
-            // Otherwise, add a new item to the cart
+            // Add a new cart item if it's not already in the cart
             CartItem cartItem = new CartItem();
             cartItem.setUser(user);
             cartItem.setBouquet(bouquet);
             cartItem.setQuantity(quantity);
-            cartItem.setCart(cart);
             cartItemRepository.save(cartItem);
         }
     }
+
 
 
     public List<CartItem> getCartByUser(Long userId) {
