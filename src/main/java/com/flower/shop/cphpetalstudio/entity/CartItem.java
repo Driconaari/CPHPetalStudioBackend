@@ -46,7 +46,6 @@ public class CartItem {
         this.cart = cart;
     }
 
-
     public void setBouquetId(Long bouquetId) {
         if (bouquet == null) {
             bouquet = new Bouquet();
