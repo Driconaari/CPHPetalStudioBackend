@@ -46,18 +46,22 @@ public class SecurityConfig {
                         .requestMatchers("/api/auth/**", "/", "/register", "/login").permitAll()
                         .requestMatchers("/bouquets", "/bouquets/{id}", "/api/bouquets").permitAll()
                         .requestMatchers("/shop/add").permitAll() // Allow all users to add items to cart
-                        .requestMatchers("/shop/add-to-cart").permitAll() // Allow all users to add items to cart
+                        .requestMatchers("/add-to-cart").permitAll() // Allow all users to add items to cart
 
                         // Admin-Only Endpoints
                         .requestMatchers("/bouquets/create", "/bouquets/{id}/edit", "/bouquets/{id}/delete").hasAuthority("ROLE_ADMIN")
                         .requestMatchers("/api/admin/**", "/admin/**").hasAuthority("ROLE_ADMIN")
 
                         // Authenticated-Only Endpoints
-                        .requestMatchers("/dashboard").authenticated()
+                        .requestMatchers("/dashboard","/add-to-cart", "/shop/**").authenticated()
 
                         // Catch-All for All Other Requests
                         .anyRequest().authenticated()
+
+
                 )
+
+
                 .sessionManagement(session ->
                         session.sessionCreationPolicy(SessionCreationPolicy.STATELESS)) // Stateless session for JWT-based authentication
                 .addFilterBefore(new LoggingFilter(), UsernamePasswordAuthenticationFilter.class) // Add LoggingFilter

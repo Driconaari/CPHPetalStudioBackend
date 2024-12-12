@@ -2,6 +2,7 @@ package com.flower.shop.cphpetalstudio.service;
 
 import com.flower.shop.cphpetalstudio.entity.User;
 import com.flower.shop.cphpetalstudio.repository.UserRepository;
+import com.flower.shop.cphpetalstudio.repository.CartRepository; // Assuming you have a CartRepository
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -10,10 +11,12 @@ import org.springframework.stereotype.Service;
 public class UserService {
 
     private final UserRepository userRepository;
+    private final CartRepository cartRepository; // Assuming CartRepository exists
     private final PasswordEncoder passwordEncoder;
 
-    public UserService(UserRepository userRepository, PasswordEncoder passwordEncoder) {
+    public UserService(UserRepository userRepository, CartRepository cartRepository, PasswordEncoder passwordEncoder) {
         this.userRepository = userRepository;
+        this.cartRepository = cartRepository;
         this.passwordEncoder = passwordEncoder;
     }
 
@@ -31,6 +34,10 @@ public class UserService {
         }
         user.setPassword(passwordEncoder.encode(user.getPassword()));
         user.setRole("ROLE_USER"); // Set default role
+        // Make sure to persist the cart before the user if it's not already saved
+        if (user.getCart() != null && user.getCart().getId() == null) {
+            cartRepository.save(user.getCart()); // Save the Cart first if it's not already saved
+        }
         return userRepository.save(user);
     }
 
@@ -59,6 +66,10 @@ public class UserService {
     }
 
     public User saveUser(User user) {
+        // Save the Cart first if it's not already saved
+        if (user.getCart() != null && user.getCart().getId() == null) {
+            cartRepository.save(user.getCart()); // Save the Cart before saving the User
+        }
         return userRepository.save(user);
     }
 
@@ -77,4 +88,5 @@ public class UserService {
     }
 
     // Other methods...
+
 }

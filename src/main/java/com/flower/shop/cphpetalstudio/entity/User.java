@@ -30,6 +30,9 @@ public class User {
     @Column(nullable = false, unique = true)
     private String email;
 
+    @OneToOne
+    private Cart cart;
+
     /**
      * Comma-separated roles, e.g., "ROLE_USER,ROLE_ADMIN".
      */
@@ -42,8 +45,7 @@ public class User {
     @Column(name = "is_company", nullable = false)
     private boolean isCompany = false; // Default value
 
-    @OneToOne
-    private Cart cart;
+
 
     /**
      * Splits the `role` field and returns a set of roles.

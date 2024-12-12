@@ -11,6 +11,7 @@ import com.flower.shop.cphpetalstudio.service.UserService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.core.Authentication;
@@ -102,15 +103,34 @@ public class ShopController {
         return order;
     }
 
+
     @PostMapping("/add-to-cart")
     @ResponseBody
-    public ResponseEntity<String> addToCart(@RequestBody AddToCartRequest request, Authentication authentication) {
-        logger.info("Add to cart request received from shop page: {}", request);
+    public ResponseEntity<?> addToCart(@RequestBody AddToCartRequest request, Authentication authentication) {
+        logger.info("Add to cart request received: {}", request);
 
-        User user = userService.findByUsername(authentication.getName());
-        Bouquet bouquet = bouquetService.getBouquetById(request.getBouquetId());
-        cartService.addToCart(user, bouquet, request.getQuantity());
+        try {
+            // Verify user authentication
+            String username = authentication.getName();
+            logger.info("Authenticated user: {}", username);
+            User user = userService.findByUsername(username);
 
-        return ResponseEntity.ok("Item added to cart successfully");
+            // Verify bouquet existence
+            Bouquet bouquet = bouquetService.getBouquetById(request.getBouquetId());
+            if (bouquet == null) {
+                logger.warn("Bouquet with ID {} not found", request.getBouquetId());
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Bouquet not found");
+            }
+
+            // Add to cart
+            cartService.addToCart(user, bouquet, request.getQuantity());
+            logger.info("Item added to cart: Bouquet ID {}, Quantity {}", request.getBouquetId(), request.getQuantity());
+
+            return ResponseEntity.ok("Item added to cart successfully");
+        } catch (Exception e) {
+            logger.error("Error adding item to cart: {}", e.getMessage(), e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Failed to add item to cart");
+        }
     }
+
 }
