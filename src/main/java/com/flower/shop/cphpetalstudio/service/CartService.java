@@ -5,6 +5,7 @@ import com.flower.shop.cphpetalstudio.entity.CartItem;
 import com.flower.shop.cphpetalstudio.entity.User;
 import com.flower.shop.cphpetalstudio.entity.Bouquet;
 import com.flower.shop.cphpetalstudio.repository.CartItemRepository;
+import com.flower.shop.cphpetalstudio.repository.CartRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -20,11 +21,13 @@ import java.util.Optional;
 public class CartService {
 
     private final CartItemRepository cartItemRepository;
+    private final CartRepository cartRepository; // Assuming you have a CartRepository for Cart persistence
     private static final Logger logger = LoggerFactory.getLogger(CartService.class);
 
     @Autowired
-    public CartService(CartItemRepository cartItemRepository) {
+    public CartService(CartItemRepository cartItemRepository, CartRepository cartRepository) {
         this.cartItemRepository = cartItemRepository;
+        this.cartRepository = cartRepository;
     }
 
     public CartItem addToCart(User user, Bouquet bouquet, int quantity) {
@@ -34,6 +37,7 @@ public class CartService {
         Cart cart = user.getCart();
         if (cart == null) {
             cart = new Cart(user);
+            cart.setCreatedAt(LocalDateTime.now()); // Set the created_at field
             user.setCart(cart);
         }
 
@@ -50,10 +54,11 @@ public class CartService {
             newCartItem.setBouquet(bouquet);
             newCartItem.setCart(cart);
             newCartItem.setQuantity(quantity);
-            newCartItem.setCreatedAt(LocalDateTime.now());
+            newCartItem.setCreatedAt(LocalDateTime.now()); // Set created_at for CartItem
             return cartItemRepository.save(newCartItem);
         }
     }
+
 
     public List<CartItem> getCartByUser(User user) {
         return cartItemRepository.findByUser(user);
@@ -68,4 +73,13 @@ public class CartService {
     public void clearCart(User user) {
         cartItemRepository.deleteByUser(user);
     }
+
+    public double getTotalPrice(User user) {
+        // Calculate total price of all items in the cart
+        List<CartItem> cartItems = cartItemRepository.findByUser(user);
+        return cartItems.stream()
+                .mapToDouble(cartItem -> cartItem.getBouquet().getPrice() * cartItem.getQuantity())
+                .sum();
+    }
+
 }

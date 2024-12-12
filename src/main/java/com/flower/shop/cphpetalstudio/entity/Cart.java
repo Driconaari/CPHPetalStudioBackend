@@ -4,6 +4,8 @@ package com.flower.shop.cphpetalstudio.entity;
 import jakarta.persistence.*;
 import lombok.*;
 
+import java.time.LocalDateTime;
+
 @Entity
 @Table(name = "carts")
 @Getter
@@ -20,9 +22,18 @@ public class Cart {
     @OneToOne(mappedBy = "cart")
     private User user;
 
+    private LocalDateTime createdAt;
+
     public Cart(User user) {
         this.user = user;
     }
 
-    // Other fields and methods
+    @PrePersist
+    public void prePersist() {
+        if (createdAt == null) {
+            createdAt = LocalDateTime.now();
+        }
+
+        // Other fields and methods
+    }
 }
