@@ -7,7 +7,11 @@ import com.flower.shop.cphpetalstudio.entity.Bouquet;
 import com.flower.shop.cphpetalstudio.repository.CartItemRepository;
 import com.flower.shop.cphpetalstudio.repository.CartRepository;
 import com.flower.shop.cphpetalstudio.repository.UserRepository;
+import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.slf4j.Logger;
@@ -15,8 +19,10 @@ import org.slf4j.LoggerFactory;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Service
 @Transactional
@@ -93,5 +99,45 @@ public class CartService {
     public int getCartCount(User user) {
         // Count the number of items in the cart
         return cartItemRepository.countByUser(user);
+    }
+
+
+
+    public List<CartItem> getCartItemsForUser(User user) {
+        // Implementation to fetch cart items for the given user
+        return cartItemRepository.findByUser(user);
+    }
+
+
+    private User getCurrentUserFromSession(HttpServletRequest request) {
+        // Logic to extract user from session or authentication
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        if (authentication != null && authentication.getPrincipal() instanceof UserDetails) {
+            String username = ((UserDetails) authentication.getPrincipal()).getUsername();
+
+            // Handle the Optional<User> returned by findByUsername
+            Optional<User> optionalUser = userRepository.findByUsername(username);
+
+            return optionalUser.orElse(null);  // Return the User if present, otherwise null
+        } else {
+            logger.warn("User is not authenticated.");
+            return null;  // Return null if no user is authenticated
+        }
+    }
+
+
+    public List<CartItem> getCartItemsByUser(User user) {
+        // Implementation to fetch cart items for the given user
+        return cartItemRepository.findByUser(user);
+    }
+
+
+    @Service
+    public class CartItemService {
+        public List<CartItem> getCartItemsByUser(User user) {
+            return cartItemRepository.findByUser(user).stream()
+                    .filter(item -> item.getBouquet() != null)
+                    .collect(Collectors.toList());
+        }
     }
 }

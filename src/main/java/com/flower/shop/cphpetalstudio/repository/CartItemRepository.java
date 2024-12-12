@@ -1,6 +1,7 @@
 package com.flower.shop.cphpetalstudio.repository;
 
 import com.flower.shop.cphpetalstudio.entity.Bouquet;
+import com.flower.shop.cphpetalstudio.entity.Cart;
 import com.flower.shop.cphpetalstudio.entity.CartItem;
 import com.flower.shop.cphpetalstudio.entity.User;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -23,6 +24,9 @@ public interface CartItemRepository extends JpaRepository<CartItem, Long> {
 
 
     int countByUser(User user);
+
+
+    List<CartItem> findByCart(Cart cart);
 
 
 }

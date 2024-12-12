@@ -51,10 +51,12 @@ public class CartItem {
     }
 
     // Method to set bouquet ID if bouquet is not provided (initialize if null)
+    // Remove this method
     public void setBouquetId(Long bouquetId) {
         if (bouquet == null) {
             bouquet = new Bouquet();  // Initialize the bouquet if it is null
         }
         bouquet.setId(bouquetId);  // Set the bouquet ID
     }
+
 }

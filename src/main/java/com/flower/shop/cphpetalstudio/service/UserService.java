@@ -3,6 +3,7 @@ package com.flower.shop.cphpetalstudio.service;
 import com.flower.shop.cphpetalstudio.entity.User;
 import com.flower.shop.cphpetalstudio.repository.UserRepository;
 import com.flower.shop.cphpetalstudio.repository.CartRepository; // Assuming you have a CartRepository
+import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -85,6 +86,12 @@ public class UserService {
     public User findById(long userId) {
         return userRepository.findById(userId)
                 .orElseThrow(() -> new RuntimeException("User not found with ID: " + userId));
+    }
+
+    public User getCurrentUser(HttpServletRequest request) {
+        // Get the logged-in user from the request
+        String username = request.getUserPrincipal().getName();
+        return getUserByUsername(username);
     }
 
     // Other methods...

@@ -4,6 +4,7 @@ import jakarta.persistence.*;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+
 @Entity
 @Table(name = "bouquets")
 public class Bouquet {
@@ -32,7 +33,6 @@ public class Bouquet {
     protected void onCreate() {
         createdAt = LocalDateTime.now();
     }
-
 
 
     @PreUpdate
@@ -74,7 +74,6 @@ public class Bouquet {
     }
 
 
-
     public String getImageUrl() {
         return imageUrl;
     }
@@ -99,13 +98,6 @@ public class Bouquet {
         this.category = category;
     }
 
-    public int getQuantityInStock() {
-        return quantityInStock;
-    }
-
-    public void setQuantityInStock(int quantityInStock) {
-        this.quantityInStock = quantityInStock;
-    }
 
     public LocalDateTime getCreatedAt() {
         return createdAt;
@@ -121,6 +113,15 @@ public class Bouquet {
 
     public void setStockQuantity(int i) {
         this.quantityInStock = i;
+    }
+
+    // Keep only one method for stock quantity
+    public int getQuantityInStock() {
+        return quantityInStock;
+    }
+
+    public void setQuantityInStock(int quantityInStock) {
+        this.quantityInStock = quantityInStock;
     }
 
 
