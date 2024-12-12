@@ -91,4 +91,9 @@ public class CartService {
                 })
                 .sum();
     }
+
+    public int getCartCount(User user) {
+        // Count the number of items in the cart
+        return cartItemRepository.countByUser(user);
+    }
 }

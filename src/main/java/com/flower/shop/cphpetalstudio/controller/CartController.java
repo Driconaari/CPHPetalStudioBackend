@@ -12,6 +12,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
@@ -95,10 +96,16 @@ public class CartController {
         return ResponseEntity.ok("Cart cleared successfully");
     }
 
-    @GetMapping("/count")
+    @GetMapping("/cart/count")
     public ResponseEntity<Integer> getCartCount(Authentication authentication) {
-        User user = userService.findByUsername(authentication.getName());
-        int count = cartItemRepository.countByUser(user);
-        return ResponseEntity.ok(count);
+        String username = authentication.getName();
+        User user = userService.findByUsername(username);
+
+        // Get cart count for the authenticated user
+        int cartCount = cartService.getCartCount(user);
+
+        // Return the count as a response
+        return ResponseEntity.ok(cartCount);
     }
+
 }
