@@ -96,6 +96,7 @@ public class CartController {
         return ResponseEntity.ok("Cart cleared successfully");
     }
 
+
     @GetMapping("/cart/count")
     public ResponseEntity<Integer> getCartCount(Authentication authentication) {
         String username = authentication.getName();

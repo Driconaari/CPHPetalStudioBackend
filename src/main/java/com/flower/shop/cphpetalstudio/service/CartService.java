@@ -43,7 +43,8 @@ public class CartService {
         // Find the cart for the user, or create one if it doesn't exist
         Cart cart = cartRepository.findByUser(user).orElseGet(() -> {
             Cart newCart = new Cart(user);  // Create a new Cart for the user if it doesn't exist
-            return cartRepository.save(newCart); // Save the new Cart and assign user_id automatically
+            cartRepository.save(newCart);    // Save the new Cart and associate the user
+            return newCart; // Return the new Cart
         });
 
         Optional<CartItem> existingCartItem = cartItemRepository.findByUserAndBouquet(user, bouquet);
@@ -63,6 +64,8 @@ public class CartService {
             cartItemRepository.save(cartItem);
         }
     }
+
+
 
 
 
