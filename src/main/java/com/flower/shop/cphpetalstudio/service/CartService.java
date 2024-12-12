@@ -42,26 +42,29 @@ public class CartService {
     public void addToCart(User user, Bouquet bouquet, int quantity) {
         // Find the cart for the user, or create one if it doesn't exist
         Cart cart = cartRepository.findByUser(user).orElseGet(() -> {
-            // Create a new Cart for the user if it doesn't exist
-            Cart newCart = new Cart(user);
-            cartRepository.save(newCart);
-            return newCart;
+            Cart newCart = new Cart(user);  // Create a new Cart for the user if it doesn't exist
+            return cartRepository.save(newCart); // Save the new Cart and assign user_id automatically
         });
 
-        // Check if the item already exists in the cart
         Optional<CartItem> existingCartItem = cartItemRepository.findByUserAndBouquet(user, bouquet);
 
         if (existingCartItem.isPresent()) {
-            // If the item exists, update the quantity
+            // Update the quantity if the item already exists in the cart
             CartItem cartItem = existingCartItem.get();
             cartItem.setQuantity(cartItem.getQuantity() + quantity);
             cartItemRepository.save(cartItem);
         } else {
-            // If it's a new item, create a new CartItem and associate it with the cart
-            CartItem cartItem = new CartItem(user, bouquet, quantity, cart);
+            // Add a new cart item if it's not already in the cart
+            CartItem cartItem = new CartItem();
+            cartItem.setUser(user);
+            cartItem.setBouquet(bouquet);
+            cartItem.setQuantity(quantity);
+            cartItem.setCart(cart);  // Set the cart for the cart item
             cartItemRepository.save(cartItem);
         }
     }
+
+
 
     public List<CartItem> getCartByUser(Long userId) {
         User user = userService.findById(userId);
