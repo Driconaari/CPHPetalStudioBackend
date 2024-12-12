@@ -33,6 +33,9 @@ public class CartItem {
     @Column(name = "cart_id", nullable = false)
     private Long cartId;
 
+    @ManyToOne(cascade = CascadeType.PERSIST)
+    private Cart cart;
+
     @PrePersist
     private void onCreate() {
         createdAt = LocalDateTime.now();

@@ -37,8 +37,9 @@ public class CartService {
         Cart cart = user.getCart();
         if (cart == null) {
             cart = new Cart(user);
-            cart.setCreatedAt(LocalDateTime.now()); // Set the created_at field
+            cart.setCreatedAt(LocalDateTime.now()); // Set the created_at field for the Cart
             user.setCart(cart);
+            cart = cartRepository.save(cart); // Save the Cart to the database before adding CartItem
         }
 
         // Find existing cart item
@@ -54,7 +55,7 @@ public class CartService {
             newCartItem.setBouquet(bouquet);
             newCartItem.setCart(cart);
             newCartItem.setQuantity(quantity);
-            newCartItem.setCreatedAt(LocalDateTime.now()); // Set created_at for CartItem
+            newCartItem.setCreatedAt(LocalDateTime.now()); // Set created_at for the CartItem
             return cartItemRepository.save(newCartItem);
         }
     }
