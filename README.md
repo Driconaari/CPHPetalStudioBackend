@@ -2,7 +2,7 @@
 
 ## Overview
 
-CPH Petal Studio is a full-stack web application for a flower shop, built with Spring Boot and Thymeleaf. It provides functionality for user authentication, product browsing, and order management.
+CPH Petal Studio is a web application for a flower shop, built with Spring Boot and Thymeleaf. It provides functionality for user authentication, product browsing, and order management.
 
 ## Setup
 

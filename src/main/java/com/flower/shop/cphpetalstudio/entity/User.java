@@ -1,73 +1,52 @@
 package com.flower.shop.cphpetalstudio.entity;
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import jakarta.persistence.*;
+import lombok.*;
 
-import java.util.Collection;
+import java.time.LocalDateTime;
+import java.util.Arrays;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 @Entity
-@Data
+@Table(name = "users")
+@Getter
+@Setter
 @NoArgsConstructor
+@AllArgsConstructor
+@ToString
 public class User {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @Column(nullable = false, unique = true)
     private String username;
+
+    @Column(nullable = false)
     private String password;
+
+    @Column(nullable = false, unique = true)
     private String email;
+
+    // Ensure the User class has the correct association with Cart
+    @OneToOne
+    @JoinColumn(name = "cart_id") // The 'cart_id' will be the foreign key in the User table
+    private Cart cart;
+
+    @Column(nullable = false)
     private String role;
-    private boolean isCompany; // Add this field
 
+    @Column(name = "created_at")
+    private LocalDateTime createdAt = LocalDateTime.now(); // Default value
 
-    public String getUsername() {
-        return username;
-    }
+    @Column(name = "is_company", nullable = false)
+    private boolean isCompany = false; // Default value
 
-    public void setUsername(String username) {
-        this.username = username;
-    }
-
-    public String getPassword() {
-        return password;
-    }
-
-    public void setPassword(String password) {
-        this.password = password;
-    }
-
-    public String getEmail() {
-        return email;
-    }
-
-    public void setEmail(String email) {
-        this.email = email;
-    }
-
-    public String getRole() {
-        return role;
-    }
-
-    public void setRole(String role) {
-        this.role = role;
-    }
-
-
-    public boolean isCompany() {
-        return isCompany;
-    }
-
-    public void setCompany(boolean company) {
-        isCompany = company;
-    }
-
-
-    public Collection<Object> getRoles() {
-        return null;
+    public Set<String> getRoles() {
+        return Arrays.stream(role.split(","))
+                .map(String::trim)
+                .collect(Collectors.toSet());
     }
 }

@@ -29,6 +29,8 @@ public class BouquetService {
                 .orElseThrow(() -> new RuntimeException("Bouquet not found with id: " + id));
     }
 
+
+
     public List<Bouquet> getFeaturedBouquets() {
         return bouquetRepository.findTop5ByFeaturedTrueOrderByCreatedAtDesc();
     }
@@ -48,7 +50,6 @@ public class BouquetService {
         bouquet.setPrice(bouquetDetails.getPrice());
         bouquet.setImageUrl(bouquetDetails.getImageUrl());
         bouquet.setFeatured(bouquetDetails.isFeatured());
-        bouquet.setStockQuantity(bouquetDetails.getStockQuantity()); // Retained from the branch
         return bouquetRepository.save(bouquet);
     }
 
@@ -66,14 +67,13 @@ public class BouquetService {
 
     public void updateBouquetStock(Long id, int quantity) {
         Bouquet bouquet = getBouquetById(id);
-        if (bouquet.getStockQuantity() + quantity < 0) { // Ensuring stock quantity validation
-            throw new RuntimeException("Stock cannot be negative for bouquet: " + bouquet.getName());
-        }
         bouquet.setStockQuantity(bouquet.getStockQuantity() + quantity);
         bouquetRepository.save(bouquet);
     }
 
-    // New methods from the master branch
+
+    // New methods
+
     public List<Bouquet> getBouquetsByIds(List<Long> bouquetIds) {
         return bouquetRepository.findAllById(bouquetIds);
     }
@@ -86,7 +86,8 @@ public class BouquetService {
         return bouquetRepository.findByPriceGreaterThan(minPrice);
     }
 
+
     public List<Bouquet> findAllBouquets() {
-        return bouquetRepository.findAll(); // Ensure this works for listing all bouquets
+        return bouquetRepository.findAll(); // Make sure this returns the bouquets correctly
     }
 }
