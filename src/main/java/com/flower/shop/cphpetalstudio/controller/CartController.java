@@ -13,6 +13,7 @@ import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/api/cart")
@@ -59,6 +60,25 @@ public class CartController {
         } catch (Exception e) {
             return ResponseEntity.badRequest().body(new ApiError("Failed to retrieve cart", e.getMessage()));
         }
+    }
+
+    @PreAuthorize("hasRole('USER')")
+    @GetMapping("/checkout")
+    public String proceedToCheckout(Authentication authentication) {
+        String username = authentication.getName();
+        List<CartItem> cartItems = cartService.getCartForUser(username);
+
+        double totalAmount = cartItems.stream()
+                .mapToDouble(item -> item.getBouquet().getPrice() * item.getQuantity())
+                .sum();
+
+        String cartDetails = cartItems.stream()
+                .map(item -> String.format("Bouquet: %s, Quantity: %d",
+                        item.getBouquet().getName(), item.getQuantity()))
+                .collect(Collectors.joining("; "));
+
+        // Redirect to payment options
+        return String.format("/payment-options.html?cartDetails=%s&totalAmount=%.2f", cartDetails, totalAmount);
     }
 
     @PreAuthorize("hasRole('USER')")

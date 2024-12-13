@@ -1,6 +1,6 @@
 package com.flower.shop.cphpetalstudio.service;
 
-import com.flower.shop.cphpetalstudio.DTO.PaymentRequest;
+import com.flower.shop.cphpetalstudio.dto.PaymentRequest;
 import com.flower.shop.cphpetalstudio.entity.Bouquet;
 import com.flower.shop.cphpetalstudio.entity.Subscription;
 import com.flower.shop.cphpetalstudio.entity.User;

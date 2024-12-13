@@ -1,4 +1,4 @@
-package com.flower.shop.cphpetalstudio.DTO; // Adjust package if necessary
+package com.flower.shop.cphpetalstudio.dto; // Adjust package if necessary
 
 
 import com.flower.shop.cphpetalstudio.entity.User;

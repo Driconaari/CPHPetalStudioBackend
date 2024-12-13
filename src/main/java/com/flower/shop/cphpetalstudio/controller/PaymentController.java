@@ -1,6 +1,6 @@
 package com.flower.shop.cphpetalstudio.controller;
 
-import com.flower.shop.cphpetalstudio.DTO.PaymentRequest;
+import com.flower.shop.cphpetalstudio.dto.PaymentRequest;
 import com.flower.shop.cphpetalstudio.entity.Bouquet;
 import com.flower.shop.cphpetalstudio.entity.User;
 import com.flower.shop.cphpetalstudio.service.OrderService;
@@ -40,17 +40,16 @@ public class PaymentController {
                 subscriptionService.createSubscription(paymentRequest);
                 return ResponseEntity.ok("Subscription created successfully.");
             } else {
-                // Fetch the user
                 User user = paymentRequest.getUser();
                 if (user == null) {
                     throw new IllegalArgumentException("User information is required for placing an order.");
                 }
 
-                // Fetch the bouquet
+                // Fetch bouquet
                 Bouquet bouquet = bouquetService.getBouquetById(paymentRequest.getBouquetId());
                 List<Bouquet> bouquets = List.of(bouquet);
 
-                // Create the order
+                // Place the order
                 orderService.createOrder(user, bouquets);
                 return ResponseEntity.ok("Order placed successfully.");
             }
