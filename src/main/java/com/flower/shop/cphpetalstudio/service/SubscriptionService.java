@@ -47,6 +47,7 @@ public class SubscriptionService {
         return subscriptionRepository.findByUserAndEndDateAfter(user, LocalDate.now());
     }
 
+    // Updated createSubscription method to handle PaymentRequest
     public Subscription createSubscription(PaymentRequest paymentRequest) {
         // Fetch the bouquet
         Bouquet bouquet = bouquetService.getBouquetById(paymentRequest.getBouquetId());

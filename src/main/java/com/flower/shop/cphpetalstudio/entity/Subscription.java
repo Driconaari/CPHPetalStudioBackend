@@ -13,24 +13,22 @@ import java.time.LocalDateTime;
 
 @Entity
 public class Subscription {
-
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
     @ManyToOne
-    @JoinColumn(name = "user_id")
+    @JoinColumn(name = "user_id", nullable = false)
     private User user;
 
     @ManyToOne
-    @JoinColumn(name = "bouquet_id")
+    @JoinColumn(name = "bouquet_id", nullable = false)
     private Bouquet bouquet;
 
     private LocalDateTime startDate;
     private LocalDateTime endDate;
-    private String frequency; // WEEKLY, MONTHLY, YEARLY
-    private String status; // ACTIVE, PAUSED, CANCELED
-
+    private String frequency;
+    private String status;
     // Getters and Setters
     public Long getId() {
         return id;
@@ -88,14 +86,15 @@ public class Subscription {
         this.status = status;
     }
 
-    public void setBouquetId(Long bouquetId) {
+    // Add the following methods:
+    public Long getBouquetId() {
+        return bouquet != null ? bouquet.getId() : null;
     }
 
-    public void setQuantity(int quantity) {
-    }
-
-    public void setSubscriptionType(String paymentPlan) {
+    public String getPaymentPlan() {
+        return frequency;
     }
 }
+
 
 

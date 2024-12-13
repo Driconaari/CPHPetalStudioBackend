@@ -7,6 +7,8 @@ import jakarta.persistence.Id;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.util.Collection;
+
 @Entity
 @Data
 @NoArgsConstructor
@@ -20,6 +22,8 @@ public class User {
     private String password;
     private String email;
     private String role;
+    private boolean isCompany; // Add this field
+
 
     public String getUsername() {
         return username;
@@ -63,4 +67,7 @@ public class User {
     }
 
 
+    public Collection<Object> getRoles() {
+        return null;
+    }
 }
