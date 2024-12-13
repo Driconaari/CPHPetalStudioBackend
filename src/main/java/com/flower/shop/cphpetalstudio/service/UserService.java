@@ -58,5 +58,18 @@ public class UserService {
                 .orElseThrow(() -> new RuntimeException("User not found with username: " + name));
     }
 
+    public User saveUser(User user) {
+        return userRepository.save(user);
+    }
+
+    public boolean checkPassword(User user, String oldPassword) {
+        return passwordEncoder.matches(oldPassword, user.getPassword());
+    }
+
+    public void updatePassword(User user, String newPassword) {
+        user.setPassword(passwordEncoder.encode(newPassword));
+        userRepository.save(user);
+    }
+
     // Other methods...
 }

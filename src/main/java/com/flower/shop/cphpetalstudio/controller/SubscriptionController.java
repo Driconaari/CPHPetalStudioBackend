@@ -1,6 +1,5 @@
 package com.flower.shop.cphpetalstudio.controller;
 
-import com.flower.shop.cphpetalstudio.DTO.PaymentRequest;
 import com.flower.shop.cphpetalstudio.entity.Subscription;
 import com.flower.shop.cphpetalstudio.entity.User;
 import com.flower.shop.cphpetalstudio.service.SubscriptionService;
@@ -17,11 +16,14 @@ import java.util.List;
 @RequestMapping("/api/subscriptions")
 public class SubscriptionController {
 
-    @Autowired
-    private SubscriptionService subscriptionService;
+    private final SubscriptionService subscriptionService;
+    private final UserService userService;
 
     @Autowired
-    private UserService userService;
+    public SubscriptionController(SubscriptionService subscriptionService, UserService userService) {
+        this.subscriptionService = subscriptionService;
+        this.userService = userService;
+    }
 
     @GetMapping
     @PreAuthorize("hasRole('ADMIN')")
@@ -37,28 +39,41 @@ public class SubscriptionController {
 
     @GetMapping("/user")
     public ResponseEntity<List<Subscription>> getUserSubscriptions(Authentication authentication) {
-        User user = userService.getUserByUsername(authentication.getName());
+        User user = userService.findByUsername(authentication.getName());
         return ResponseEntity.ok(subscriptionService.getSubscriptionsByUser(user));
     }
 
     @PostMapping
-    public ResponseEntity<Subscription> createSubscription(@RequestBody PaymentRequest paymentRequest, Authentication authentication) {
-        User user = userService.getUserByUsername(authentication.getName());
-        paymentRequest.setUser(user); // Set the user in the PaymentRequest
-        Subscription subscription = subscriptionService.createSubscription(paymentRequest);
-        return ResponseEntity.ok(subscription);
+    public ResponseEntity<?> createSubscription(@RequestBody Subscription subscription, Authentication authentication) {
+        try {
+            User user = userService.findByUsername(authentication.getName());
+            subscription.setUser(user);
+            Subscription createdSubscription = subscriptionService.createSubscription(subscription);
+            return ResponseEntity.ok(createdSubscription);
+        } catch (Exception e) {
+            return ResponseEntity.internalServerError().body("An error occurred while creating the subscription: " + e.getMessage());
+        }
     }
 
     @PutMapping("/{id}")
     @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<Subscription> updateSubscription(@PathVariable Long id, @RequestBody Subscription subscriptionDetails) {
-        return ResponseEntity.ok(subscriptionService.updateSubscription(id, subscriptionDetails));
+    public ResponseEntity<?> updateSubscription(@PathVariable Long id, @RequestBody Subscription subscriptionDetails) {
+        try {
+            Subscription updatedSubscription = subscriptionService.updateSubscription(id, subscriptionDetails);
+            return ResponseEntity.ok(updatedSubscription);
+        } catch (Exception e) {
+            return ResponseEntity.notFound().build();
+        }
     }
 
     @DeleteMapping("/{id}")
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<?> deleteSubscription(@PathVariable Long id) {
-        subscriptionService.deleteSubscription(id);
-        return ResponseEntity.ok().build();
+        try {
+            subscriptionService.deleteSubscription(id);
+            return ResponseEntity.ok().build();
+        } catch (Exception e) {
+            return ResponseEntity.notFound().build();
+        }
     }
 }

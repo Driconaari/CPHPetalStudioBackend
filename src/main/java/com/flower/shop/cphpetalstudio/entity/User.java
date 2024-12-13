@@ -52,4 +52,15 @@ public class User {
     public void setRole(String role) {
         this.role = role;
     }
+
+
+    public boolean isCompany() {
+        return isCompany;
+    }
+
+    public void setCompany(boolean company) {
+        isCompany = company;
+    }
+
+
 }
