@@ -4,7 +4,7 @@ public class ApiResponse {
     private String message;
 
         // Constructor
-        public ApiResponse(String message, double totalAmount) {
+        public ApiResponse(String message) {
             this.message = message;
         }
 

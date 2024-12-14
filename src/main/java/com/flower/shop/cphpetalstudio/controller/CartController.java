@@ -162,6 +162,25 @@ public class CartController {
         }
     }
 
+    @DeleteMapping("/clear")
+    public ResponseEntity<?> clearCart(Authentication authentication) {
+        try {
+            if (authentication == null) {
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("User is not authenticated.");
+            }
+
+            String username = authentication.getName();
+            User user = userService.findByUsername(username);
+
+            cartService.clearCart(user.getId());
+            return ResponseEntity.ok(new ApiResponse("Cart cleared successfully"));
+        } catch (Exception e) {
+            logger.error("Error clearing cart: {}", e.getMessage(), e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Failed to clear cart.");
+        }
+    }
+
+
     // Helper class for Order Summary Response
     private static class OrderSummaryResponse {
         private final String orderId;
