@@ -4,6 +4,8 @@ import com.flower.shop.cphpetalstudio.entity.User;
 import com.flower.shop.cphpetalstudio.repository.UserRepository;
 import com.flower.shop.cphpetalstudio.repository.CartRepository; // Assuming you have a CartRepository
 import jakarta.servlet.http.HttpServletRequest;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -88,9 +90,12 @@ public class UserService {
                 .orElseThrow(() -> new RuntimeException("User not found with ID: " + userId));
     }
 
-    public User getCurrentUser(HttpServletRequest request) {
-        // Get the logged-in user from the request
-        String username = request.getUserPrincipal().getName();
+    public User getCurrentUser() {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        if (authentication == null || !authentication.isAuthenticated()) {
+            throw new RuntimeException("No authenticated user found");
+        }
+        String username = authentication.getName();
         return getUserByUsername(username);
     }
 

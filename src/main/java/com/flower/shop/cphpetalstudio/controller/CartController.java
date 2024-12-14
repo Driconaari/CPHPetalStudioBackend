@@ -1,6 +1,7 @@
 package com.flower.shop.cphpetalstudio.controller;
 
 import com.flower.shop.cphpetalstudio.dto.AddToCartRequest;
+import com.flower.shop.cphpetalstudio.dto.ApiResponse;
 import com.flower.shop.cphpetalstudio.dto.CartItemDTO;
 import com.flower.shop.cphpetalstudio.dto.RemoveFromCartRequest;
 import com.flower.shop.cphpetalstudio.entity.Bouquet;
@@ -16,9 +17,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
-import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.web.bind.annotation.*;
 
+import java.math.BigDecimal;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -70,7 +71,6 @@ public class CartController {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
     }
-
 
     // Add an item to the cart
     @PostMapping("/add-to-cart")
@@ -131,5 +131,72 @@ public class CartController {
 
         int cartCount = cartService.getCartCount(user);
         return ResponseEntity.ok(cartCount);
+    }
+
+    // Endpoint for order summary
+    @GetMapping("/order-summary")
+    public ResponseEntity<?> getOrderSummary(Authentication authentication) {
+        try {
+            if (authentication == null) {
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("User is not authenticated.");
+            }
+
+            String username = authentication.getName();
+            User user = userService.findByUsername(username);
+            List<CartItem> cartItems = cartService.getCartItemsByUser(user);
+
+            if (cartItems.isEmpty()) {
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Cart is empty.");
+            }
+
+            BigDecimal totalAmount = cartItems.stream()
+                    .map(item -> item.getBouquet().getPrice().multiply(BigDecimal.valueOf(item.getQuantity())))
+                    .reduce(BigDecimal.ZERO, BigDecimal::add);
+
+            String orderId = "ORD" + System.currentTimeMillis();
+
+            return ResponseEntity.ok(new OrderSummaryResponse(orderId, totalAmount));
+        } catch (Exception e) {
+            logger.error("Error generating order summary: {}", e.getMessage(), e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Failed to generate order summary.");
+        }
+    }
+
+    @DeleteMapping("/clear")
+    public ResponseEntity<?> clearCart(Authentication authentication) {
+        try {
+            if (authentication == null) {
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("User is not authenticated.");
+            }
+
+            String username = authentication.getName();
+            User user = userService.findByUsername(username);
+
+            cartService.clearCart(user.getId());
+            return ResponseEntity.ok(new ApiResponse("Cart cleared successfully"));
+        } catch (Exception e) {
+            logger.error("Error clearing cart: {}", e.getMessage(), e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Failed to clear cart.");
+        }
+    }
+
+
+    // Helper class for Order Summary Response
+    private static class OrderSummaryResponse {
+        private final String orderId;
+        private final BigDecimal totalAmount;
+
+        public OrderSummaryResponse(String orderId, BigDecimal totalAmount) {
+            this.orderId = orderId;
+            this.totalAmount = totalAmount;
+        }
+
+        public String getOrderId() {
+            return orderId;
+        }
+
+        public BigDecimal getTotalAmount() {
+            return totalAmount;
+        }
     }
 }
