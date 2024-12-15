@@ -35,8 +35,7 @@ public class SecurityConfig {
         http
                 .cors(cors -> cors.configurationSource(request -> {
                     var corsConfiguration = new org.springframework.web.cors.CorsConfiguration();
-                    corsConfiguration.setAllowedOrigins(java.util.List.of("http://localhost:5500",
-                            "https://cphpetalstudio-frontend.azurewebsites.net" )); // Allow frontend to make requests
+                    corsConfiguration.setAllowedOrigins(java.util.List.of("http://localhost:5500", "https://cphpetalstudio-frontend.azurewebsites.net" )); // Allow frontend to make requests
                     corsConfiguration.setAllowedMethods(java.util.List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
                     corsConfiguration.setAllowedHeaders(java.util.List.of("*")); // Allow all headers
                     corsConfiguration.setAllowCredentials(true); // Allow credentials (cookies, authorization headers)
