@@ -4,7 +4,7 @@
 
 CPH Petal Studio is a web application for a flower shop, built with Spring Boot and Thymeleaf. It provides functionality for user authentication, product browsing, and order management.
 
-## Setup
+## Setup.
 
 1. Clone the repository:
    ```
