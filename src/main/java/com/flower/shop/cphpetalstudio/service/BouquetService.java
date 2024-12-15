@@ -30,6 +30,7 @@ public class BouquetService {
     }
 
 
+
     public List<Bouquet> getFeaturedBouquets() {
         return bouquetRepository.findTop5ByFeaturedTrueOrderByCreatedAtDesc();
     }
@@ -69,6 +70,7 @@ public class BouquetService {
         bouquet.setStockQuantity(bouquet.getStockQuantity() + quantity);
         bouquetRepository.save(bouquet);
     }
+
 
     // New methods
 

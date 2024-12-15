@@ -1,5 +1,6 @@
 package com.flower.shop.cphpetalstudio.controller;
 
+import com.flower.shop.cphpetalstudio.dto.PaymentRequest;
 import com.flower.shop.cphpetalstudio.entity.Subscription;
 import com.flower.shop.cphpetalstudio.entity.User;
 import com.flower.shop.cphpetalstudio.service.SubscriptionService;
@@ -47,8 +48,15 @@ public class SubscriptionController {
     public ResponseEntity<?> createSubscription(@RequestBody Subscription subscription, Authentication authentication) {
         try {
             User user = userService.findByUsername(authentication.getName());
-            subscription.setUser(user);
-            Subscription createdSubscription = subscriptionService.createSubscription(subscription);
+            // Convert Subscription to PaymentRequest
+            PaymentRequest paymentRequest = new PaymentRequest();
+            paymentRequest.setBouquetId(subscription.getBouquet().getId());
+            paymentRequest.setQuantity(1); // Assuming quantity is 1 for subscriptions
+            paymentRequest.setSubscription(true);
+            paymentRequest.setPaymentPlan(subscription.getFrequency());
+            paymentRequest.setUser(user);
+
+            Subscription createdSubscription = subscriptionService.createSubscription(paymentRequest);
             return ResponseEntity.ok(createdSubscription);
         } catch (Exception e) {
             return ResponseEntity.internalServerError().body("An error occurred while creating the subscription: " + e.getMessage());

@@ -1,161 +1,145 @@
 package com.flower.shop.cphpetalstudio.service;
 
+import com.flower.shop.cphpetalstudio.entity.Cart;
 import com.flower.shop.cphpetalstudio.entity.CartItem;
 import com.flower.shop.cphpetalstudio.entity.User;
 import com.flower.shop.cphpetalstudio.entity.Bouquet;
 import com.flower.shop.cphpetalstudio.repository.CartItemRepository;
+import com.flower.shop.cphpetalstudio.repository.CartRepository;
 import com.flower.shop.cphpetalstudio.repository.UserRepository;
-import com.flower.shop.cphpetalstudio.repository.BouquetRepository;
+import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-import java.util.HashMap;
+import java.math.BigDecimal;
+import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Service
 @Transactional
 public class CartService {
 
     private final CartItemRepository cartItemRepository;
+    private final CartRepository cartRepository;
     private final UserRepository userRepository;
-    private final BouquetRepository bouquetRepository;
-    private Map<Long, CartItem> cart = new HashMap<>();
+    private static final Logger logger = LoggerFactory.getLogger(CartService.class);
+    private final UserService userService;
+    private final BouquetService bouquetService;
 
     @Autowired
-    public CartService(CartItemRepository cartItemRepository,
-                       UserRepository userRepository,
-                       BouquetRepository bouquetRepository) {
+    public CartService(CartItemRepository cartItemRepository, CartRepository cartRepository, UserRepository userRepository, UserService userService, BouquetService bouquetService) {
         this.cartItemRepository = cartItemRepository;
+        this.cartRepository = cartRepository;
         this.userRepository = userRepository;
-        this.bouquetRepository = bouquetRepository;
+        this.userService = userService;
+        this.bouquetService = bouquetService;
     }
 
-    // Add a bouquet to the user's cart
-    public CartItem addBouquetToCart(String username, Long bouquetId, int quantity) {
-        User user = userRepository.findByUsername(username)
-                .orElseThrow(() -> new RuntimeException("User not found"));
+    @Transactional
+    public void addToCart(User user, Bouquet bouquet, int quantity) {
+        // Find the user's cart or create a new one if it doesn't exist
+        Cart cart = cartRepository.findByUser(user).orElseGet(() -> {
+            // Create a new Cart if the user doesn't have one
+            Cart newCart = new Cart(user); // Associate the cart with the user
+            return cartRepository.save(newCart); // Save the new cart
+        });
 
-        Bouquet bouquet = bouquetRepository.findById(bouquetId)
-                .orElseThrow(() -> new RuntimeException("Bouquet not found"));
+        // Now that we have the cart, we can add the bouquet to it.
+        CartItem cartItem = new CartItem();
+        cartItem.setCart(cart);
+        cartItem.setBouquet(bouquet);
+        cartItem.setQuantity(quantity);
+        cartItem.setUser(user); // Ensure the user is set on the CartItem
 
-        // Check if the item already exists in the cart
-        Optional<CartItem> existingItem = cartItemRepository.findByUserAndBouquet(user, bouquet);
-        if (existingItem.isPresent()) {
-            CartItem item = existingItem.get();
-            item.setQuantity(item.getQuantity() + quantity); // Increment quantity
-            return cartItemRepository.save(item);
-        } else {
-            // Create a new cart item
-            CartItem cartItem = new CartItem();
-            cartItem.setUser(user);
-            cartItem.setBouquet(bouquet);
-            cartItem.setQuantity(quantity);
-            return cartItemRepository.save(cartItem);
-        }
+        // Save the cartItem in the repository
+        cartItemRepository.save(cartItem);
     }
 
-    // Remove a bouquet from the user's cart
-    public void removeBouquetFromCart(String username, Long cartItemId) {
-        User user = userRepository.findByUsername(username)
-                .orElseThrow(() -> new RuntimeException("User not found"));
 
-        CartItem cartItem = cartItemRepository.findById(cartItemId)
+    public List<CartItem> getCartByUser(Long userId) {
+        User user = userService.findById(userId);
+        return cartItemRepository.findByUser(user);
+    }
+
+    public void removeFromCart(User user, Long bouquetId) {
+        CartItem cartItem = cartItemRepository.findByUserAndBouquet_Id(user, bouquetId)
                 .orElseThrow(() -> new RuntimeException("Cart item not found"));
-
-        // Ensure the user owns the cart item
-        if (!cartItem.getUser().equals(user)) {
-            throw new RuntimeException("Unauthorized access to cart item");
-        }
-
         cartItemRepository.delete(cartItem);
     }
 
-    // Retrieve the cart for the logged-in user
-    public List<CartItem> getCartForUser(String username) {
-        User user = userRepository.findByUsername(username)
-                .orElseThrow(() -> new RuntimeException("User not found"));
-
-        return cartItemRepository.findByUser(user);
-    }
-
-    // Update the quantity of a cart item
-    public CartItem updateCartItem(String username, Long cartItemId, int newQuantity) {
-        User user = userRepository.findByUsername(username)
-                .orElseThrow(() -> new RuntimeException("User not found"));
-
-        CartItem cartItem = cartItemRepository.findById(cartItemId)
-                .orElseThrow(() -> new RuntimeException("Cart item not found"));
-
-        // Ensure the user owns the cart item
-        if (!cartItem.getUser().equals(user)) {
-            throw new RuntimeException("Unauthorized access to cart item");
-        }
-
-        cartItem.setQuantity(newQuantity);
-        return cartItemRepository.save(cartItem);
-    }
-
-    // Clear the cart for the user
-    public void clearCart(String username) {
-        User user = userRepository.findByUsername(username)
-                .orElseThrow(() -> new RuntimeException("User not found"));
-
+    public void clearCart(Long userId) {
+        User user = userService.findById(userId);
         cartItemRepository.deleteByUser(user);
     }
 
+    public double getTotalPrice(Long userId) {
+        User user = userRepository.findById(userId).orElseThrow(() -> new RuntimeException("User not found"));
 
-    public CartItem addToCart(User user, Bouquet bouquet, int quantity) {
-        Optional<CartItem> existingItem = cartItemRepository.findByUserAndBouquet(user, bouquet);
+        // Calculate the total price of all items in the cart
+        List<CartItem> cartItems = cartItemRepository.findByUser(user);
 
-        if (existingItem.isPresent()) {
-            CartItem cartItem = existingItem.get();
-            cartItem.setQuantity(cartItem.getQuantity() + quantity);
-            return cartItemRepository.save(cartItem);
-        } else {
-            CartItem newCartItem = new CartItem(user, bouquet, quantity);
-            return cartItemRepository.save(newCartItem);
-        }
-    }
-
-    public List<CartItem> getCartByUser(User user) {
-        return cartItemRepository.findByUser(user);
-    }
-
-    public CartItem removeFromCart(User user, Long bouquetId) {
-
-        // Use the updated method to match the repository's query method
-        CartItem cartItem = cartItemRepository.findByUserAndBouquet_Id(user, bouquetId)
-                .orElseThrow(() -> new RuntimeException("Cart item not found"));
-
-        cartItemRepository.delete(cartItem); // Delete the item
-
-        return cartItem; // Return the deleted item
-    }
-
-
-
-    public void addToCart(CartItem cartItem) {
-        Long itemId = cartItem.getBouquetId();
-        if (cart.containsKey(itemId)) {
-            CartItem existingItem = cart.get(itemId);
-            existingItem.setQuantity(existingItem.getQuantity() + cartItem.getQuantity());  // Update quantity if item already in cart
-        } else {
-            cart.put(itemId, cartItem);  // Add new item if not present in cart
-        }
-    }
-
-    public void removeFromCart(Long itemId) {
-        cart.remove(itemId);  // Remove item from the cart by its item ID
-    }
-
-    public int getCartCount() {
-        // Return total count of items in the cart. Assuming count is quantity of all items.
-        return cart.values().stream()
-                .mapToInt(CartItem::getQuantity)
+        return cartItems.stream()
+                .mapToDouble(cartItem -> {
+                    BigDecimal price = cartItem.getBouquet().getPrice(); // Price as BigDecimal
+                    BigDecimal quantity = BigDecimal.valueOf(cartItem.getQuantity()); // Convert quantity to BigDecimal
+                    return price.multiply(quantity).doubleValue(); // Multiply BigDecimal values and convert result to double
+                })
                 .sum();
     }
 
+    public int getCartCount(User user) {
+        // Count the number of items in the cart
+        return cartItemRepository.countByUser(user);
+    }
+
+
+
+    public List<CartItem> getCartItemsForUser(User user) {
+        // Implementation to fetch cart items for the given user
+        return cartItemRepository.findByUser(user);
+    }
+
+
+    private User getCurrentUserFromSession(HttpServletRequest request) {
+        // Logic to extract user from session or authentication
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        if (authentication != null && authentication.getPrincipal() instanceof UserDetails) {
+            String username = ((UserDetails) authentication.getPrincipal()).getUsername();
+
+            // Handle the Optional<User> returned by findByUsername
+            Optional<User> optionalUser = userRepository.findByUsername(username);
+
+            return optionalUser.orElse(null);  // Return the User if present, otherwise null
+        } else {
+            logger.warn("User is not authenticated.");
+            return null;  // Return null if no user is authenticated
+        }
+    }
+
+
+    public List<CartItem> getCartItemsByUser(User user) {
+        // Implementation to fetch cart items for the given user
+        return cartItemRepository.findByUser(user);
+    }
+
+
+
+
+    @Service
+    public class CartItemService {
+        public List<CartItem> getCartItemsByUser(User user) {
+            return cartItemRepository.findByUser(user).stream()
+                    .filter(item -> item.getBouquet() != null)
+                    .collect(Collectors.toList());
+        }
+    }
 }

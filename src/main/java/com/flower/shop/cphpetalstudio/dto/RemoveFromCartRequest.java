@@ -7,4 +7,10 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 public class RemoveFromCartRequest {
     private Long bouquetId; // The ID of the bouquet to remove
+    private  long userId; // The ID of the user to remove the bouquet from
+
+    public long getUserId() {
+        return userId;
+
+    }
 }

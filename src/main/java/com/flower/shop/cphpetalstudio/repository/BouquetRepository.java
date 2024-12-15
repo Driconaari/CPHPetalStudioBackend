@@ -8,6 +8,7 @@ import org.springframework.stereotype.Repository;
 
 import java.math.BigDecimal;
 import java.util.List;
+import java.util.Optional;
 
 @Repository
 public interface BouquetRepository extends JpaRepository<Bouquet, Long> {
@@ -21,4 +22,6 @@ public interface BouquetRepository extends JpaRepository<Bouquet, Long> {
     // New methods
     List<Bouquet> findByPriceLessThanEqual(BigDecimal maxPrice);
     List<Bouquet> findByPriceGreaterThan(BigDecimal minPrice);
+    Optional<Bouquet> findById(Long bouquetId);
+
 }
