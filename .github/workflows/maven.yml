@@ -10,7 +10,10 @@ name: Java CI/CD Pipeline
 
 on:
   push:
-    branches: [deployment]
+    branches: [master]
+    pull_request:
+        branches: [master]
+
 
 jobs:
   build:
@@ -46,7 +49,7 @@ jobs:
         run: mvn -B package --file pom.xml -DskipTests
 
       # Publish to GitHub Packages (if needed)
-      - name: Publish to GitHub Packages
-        run: mvn deploy -s $GITHUB_WORKSPACE/settings.xml
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      #- name: Publish to GitHub Packages
+        #run: mvn deploy -s $GITHUB_WORKSPACE/settings.xml
+        #env:
+          #GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
